@@ -107,6 +107,7 @@ def main(page: ft.Page):
     show_login()
 
 if __name__ == "__main__":
+    # Railway จะส่ง PORT มาให้ผ่าน Environment Variable
+    import os
     port = int(os.getenv("PORT", 8080))
-    ft.app(target=main, view="web_browser", port=port)
-        
+    ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=port)
