@@ -37,20 +37,22 @@ def main(page: ft.Page):
             ])
         elif route_name == "ai":
             chat_log = ft.Column(scroll="always", expand=True)
-            user_input = ft.TextField(hint_text="Command...", expand=True, border_color="cyan")
+            user_input = ft.TextField(hint_text="Type command...", expand=True, border_color="cyan")
+            
             def send_msg(e):
                 if user_input.value:
                     chat_log.controls.append(ft.Container(content=ft.Text(f"SIR: {user_input.value}"), bgcolor="#1e293b", padding=10, border_radius=10))
                     try:
                         resp = model.generate_content(user_input.value)
                         chat_log.controls.append(ft.Container(content=ft.Text(f"JARVIS: {resp.text}", color="cyan"), bgcolor="#0f172a", padding=10, border_radius=10))
-                    except: chat_log.controls.append(ft.Text("ERROR", color="red"))
+                    except: chat_log.controls.append(ft.Text("ERROR: NO RESPONSE", color="red"))
                     user_input.value = ""; page.update()
 
             content_area.content = ft.Column([
                 ft.Text("AI CONSOLE", size=25, color="cyan"),
                 ft.Container(content=chat_log, bgcolor="#050a14", padding=15, border_radius=15, expand=True),
-                ft.Row([user_input, ft.IconButton(icon="send", on_click=send_msg, icon_color="cyan")])
+                # แก้ไขจุดนี้: ใช้ ElevatedButton แทน IconButton เพื่อตัดปัญหาเรื่องไอคอนไม่แสดงผล
+                ft.Row([user_input, ft.ElevatedButton("SEND", on_click=send_msg, bgcolor="cyan", color="black")])
             ])
         page.update()
 
@@ -82,10 +84,9 @@ def main(page: ft.Page):
             else:
                 page.add(ft.Text("DENIED", color="red")); page.update()
 
-        # แก้ไขจุดพัง: ใช้ Column ครอบแทนการใช้ Container alignment
         page.add(
             ft.Column([
-                ft.Container(height=100), # เว้นระยะข้างบนแทน alignment
+                ft.Container(height=100),
                 ft.Row([
                     ft.Column([
                         ft.Text("SECURE ACCESS", size=30, color="cyan", weight="bold"),
@@ -103,3 +104,4 @@ if __name__ == "__main__":
     import os
     port = int(os.getenv("PORT", 8080))
     ft.app(target=main, view="web_browser", port=port)
+                
