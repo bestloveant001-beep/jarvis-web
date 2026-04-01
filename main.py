@@ -1,16 +1,12 @@
 import flet as ft
-import requests
-import json
 import os
 import time
 import google.generativeai as genai
-from datetime import datetime
 
 # --- 🔐 CONFIG ---
 ADMIN_USER = "ADMIN"
 ADMIN_CODE = "159753"
 GEMINI_API_KEY = "AIzaSyD-mgndxGz8Ddfy83JWoDohZwGQ_wRzrt4" 
-DB_FILE = "users_db.json"
 
 try:
     genai.configure(api_key=GEMINI_API_KEY)
@@ -18,132 +14,95 @@ try:
 except:
     model = None
 
-def load_db():
-    if os.path.exists(DB_FILE):
-        with open(DB_FILE, "r") as f: return json.load(f)
-    return {}
-
 def main(page: ft.Page):
-    page.title = "J.A.R.V.I.S. ULTIMATE"
+    page.title = "J.A.R.V.I.S. NEXT-GEN"
     page.theme_mode = "dark"
-    page.bgcolor = "#000814"
-    page.padding = 20
+    page.bgcolor = "#00050a"
+    page.padding = 0 # เต็มจอ
 
-    # --- UI STATE ---
-    current_user = "SIR"
+    # ส่วนแสดงเนื้อหาหลัก
+    content_area = ft.Container(expand=True, padding=20)
 
-    def change_tab(e):
-        idx = e.control.selected_index
-        if idx == 0: show_home()
-        elif idx == 1: show_ai()
-        elif idx == 2: show_sys()
-        elif idx == 3: show_logs()
+    # --- ฟังก์ชันสลับหน้าจอ ---
+    def route_change(route_name):
+        content_area.content = None
+        if route_name == "home":
+            content_area.content = ft.Column([
+                ft.Text("SYSTEM OVERVIEW", size=30, weight="bold", color="cyan"),
+                ft.Row([
+                    ft.Container(content=ft.Text("CPU: 42%", color="white"), bgcolor="#1a3355", padding=20, border_radius=10, expand=True),
+                    ft.Container(content=ft.Text("NET: ACTIVE", color="white"), bgcolor="#1a3355", padding=20, border_radius=10, expand=True),
+                ]),
+                ft.Container(
+                    content=ft.Column([
+                        ft.Text("SATELLITE UPLINK STATUS", size=15, color="cyan"),
+                        ft.ProgressBar(value=0.7, color="cyan", bgcolor="#002233"),
+                    ]),
+                    padding=20, bgcolor="#001a33", border_radius=15
+                )
+            ], spacing=20)
+        
+        elif route_name == "ai":
+            chat_log = ft.Column(scroll="always", height=400)
+            user_in = ft.TextField(label="Command...", expand=True, border_color="cyan")
+            def send_msg(e):
+                if user_in.value:
+                    chat_log.controls.append(ft.Text("YOU: " + user_in.value, color="white"))
+                    try:
+                        resp = model.generate_content(user_in.value)
+                        chat_log.controls.append(ft.Text("DOLA: " + resp.text, color="cyan"))
+                    except: chat_log.controls.append(ft.Text("AI ERROR", color="red"))
+                    user_in.value = ""
+                    page.update()
 
-    # --- 1. HOME PAGE ---
-    def show_home():
-        page.clean()
-        now = datetime.now().strftime("%H:%M:%S")
-        date = datetime.now().strftime("%d %B %Y")
-        page.add(
-            ft.Column([
-                ft.Text("WELCOME BACK, " + current_user, size=30, weight="bold", color="cyan"),
-                ft.Text(date, size=20, color="grey"),
-                ft.Text(now, size=60, weight="bold", color="cyan"),
-                ft.Divider(),
-                ft.Text("SYSTEM STATUS: OPTIMAL", color="green"),
-                ft.ProgressBar(width=400, color="cyan", value=0.4),
-                ft.ElevatedButton("LOGOUT", on_click=lambda _: show_login())
-            ], horizontal_alignment="center")
-        )
-        page.add(nav_bar)
+            content_area.content = ft.Column([
+                ft.Text("AI NEURAL LINK", size=25, color="cyan", weight="bold"),
+                ft.Container(content=chat_log, bgcolor="#001122", padding=15, border_radius=10, expand=True),
+                ft.Row([user_in, ft.ElevatedButton("SEND", on_click=send_msg)])
+            ], expand=True)
+
+        elif route_name == "settings":
+            content_area.content = ft.Column([
+                ft.Text("CORE SETTINGS", size=25, color="cyan"),
+                ft.Switch(label="NIGHT PROTOCOL", value=True),
+                ft.Switch(label="STEALTH MODE", value=False),
+                ft.ElevatedButton("LOGOUT", on_click=lambda _: show_login(), color="red")
+            ])
         page.update()
 
-    # --- 2. AI PAGE ---
-    chat_log = ft.Column(scroll="always", height=300)
-    ai_selector = ft.Dropdown(value="Dola", options=[ft.dropdown.Option("Dola"), ft.dropdown.Option("CatGPT")], width=120)
-    user_input = ft.TextField(hint_text="Message...", expand=True)
-
-    def ask_ai(e):
-        if not user_input.value: return
-        msg = user_input.value
-        who = ai_selector.value
-        chat_log.controls.append(ft.Text("YOU: " + msg, weight="bold"))
-        user_input.value = ""
-        page.update()
-        try:
-            resp = model.generate_content("คุณคือ " + who + " ตอบเจ้านายว่า: " + msg)
-            color = "cyan" if who == "Dola" else "orange"
-            chat_log.controls.append(ft.Text(who.upper() + ": " + resp.text, color=color))
-        except:
-            chat_log.controls.append(ft.Text("AI OFFLINE (Check API Key)", color="red"))
-        page.update()
-
-    def show_ai():
-        page.clean()
-        page.add(
-            ft.Text("AI COMMAND CENTER", size=25, color="cyan", weight="bold"),
-            chat_log,
-            ft.Row([ai_selector, user_input, ft.ElevatedButton("SEND", on_click=ask_ai)]),
-            nav_bar
-        )
-        page.update()
-
-    # --- 3. SYSTEM MONITOR ---
-    def show_sys():
-        page.clean()
-        page.add(
-            ft.Text("HARDWARE MONITOR", size=25, color="cyan"),
-            ft.Column([
-                ft.Text("CPU CORE: 49%"), ft.ProgressBar(value=0.49, color="red"),
-                ft.Text("MEMORY: 2.4GB / 8GB"), ft.ProgressBar(value=0.3, color="blue"),
-                ft.Text("NETWORK: 150 Mbps"), ft.ProgressBar(value=0.8, color="green"),
-                ft.Text("SATELLITE LINK: ACTIVE", color="cyan")
-            ]),
-            nav_bar
-        )
-        page.update()
-
-    # --- 4. LOGS PAGE ---
-    def show_logs():
-        page.clean()
-        db = load_db()
-        user_list = ft.Column()
-        for u in db: user_list.controls.append(ft.Text("- USER: " + u))
-        page.add(
-            ft.Text("DATABASE ACCESS", size=25, color="cyan"),
-            ft.Text("REGISTERED USERS:"),
-            user_list,
-            nav_bar
-        )
-        page.update()
-
-    # --- NAVIGATION BAR (Legacy Compatible) ---
-    nav_bar = ft.Tabs(
-        selected_index=0,
-        on_change=change_tab,
-        tabs=[
-            ft.Tab(text="HOME"),
-            ft.Tab(text="AI"),
-            ft.Tab(text="SYS"),
-            ft.Tab(text="LOGS"),
-        ]
+    # --- แถบเมนูข้าง (Sidebar) ---
+    sidebar = ft.Container(
+        content=ft.Column([
+            ft.Text("J.A.R.V.I.S.", size=22, weight="bold", color="cyan"),
+            ft.Divider(color="cyan"),
+            ft.TextButton("DASHBOARD", on_click=lambda _: route_change("home")),
+            ft.TextButton("AI CONSOLE", on_click=lambda _: route_change("ai")),
+            ft.TextButton("SETTINGS", on_click=lambda _: route_change("settings")),
+        ], spacing=20),
+        width=200, bgcolor="#001122", padding=20
     )
 
-    # --- LOGIN SYSTEM ---
+    # --- หน้า LOGIN ---
     def show_login():
         page.clean()
-        u = ft.TextField(label="USER ID", width=300)
-        p = ft.TextField(label="ACCESS CODE", password=True, width=300)
-        def login_click(e):
-            db = load_db()
-            if u.value == ADMIN_USER and p.value == ADMIN_CODE: 
-                show_home()
-            elif u.value in db and db[u.value] == p.value: 
-                show_home()
-            else: 
-                page.add(ft.Text("DENIED", color="red"))
+        u = ft.TextField(label="IDENTITY", width=250)
+        p = ft.TextField(label="PASSCODE", password=True, width=250)
+        def do_login(e):
+            if u.value == ADMIN_USER and p.value == ADMIN_CODE:
+                page.clean()
+                page.add(ft.Row([sidebar, content_area], expand=True))
+                route_change("home")
+            else:
+                page.add(ft.Text("ACCESS DENIED", color="red"))
                 page.update()
-        page.add(ft.Text("J.A.R.V.I.S. OS", size=30, weight="bold"), u, p, ft.ElevatedButton("ACCESS", on_click=login_click))
+        
+        page.add(
+            ft.Column([
+                ft.Text("BIOMETRIC SCAN", size=35, weight="bold", color="cyan"),
+                u, p,
+                ft.ElevatedButton("AUTHORIZE", on_click=do_login, width=200)
+            ], horizontal_alignment="center")
+        )
         page.update()
 
     show_login()
@@ -151,3 +110,4 @@ def main(page: ft.Page):
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8080))
     ft.app(target=main, view="web_browser", port=port)
+            
