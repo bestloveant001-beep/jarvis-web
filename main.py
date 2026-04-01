@@ -19,129 +19,58 @@ except:
 def main(page: ft.Page):
     page.title = "J.A.R.V.I.S. INTERFACE"
     page.theme_mode = "dark"
-    page.bgcolor = "#00050a"  # Deep Space Blue
-    page.window_width = 1000
-    page.window_height = 800
+    page.bgcolor = "#00050a"
     page.padding = 0
 
     user_session = {"name": "", "level": 0}
-    content_area = ft.Container(expand=True, padding=30)
+    content_area = ft.Container(expand=True, padding=20)
 
-    # --- UI Functions ---
     def route_change(route_name):
         content_area.content = None
-        
         if route_name == "home":
             content_area.content = ft.Column([
-                ft.Text("SYSTEM STATUS", size=40, weight="bold", color="cyan"),
+                ft.Text("SYSTEM OVERVIEW", size=30, weight="bold", color="cyan"),
                 ft.Row([
-                    ft.Container(
-                        content=ft.Column([
-                            ft.Icon(ft.icons.MEMORY, color="cyan", size=30),
-                            ft.Text("NEURAL LINK", size=12, color="grey"),
-                            ft.Text("STABLE", size=20, weight="bold", color="cyan"),
-                        ]),
-                        bgcolor="#0a192f", padding=20, border_radius=15, expand=True, border=ft.border.all(1, "#1e3a8a")
-                    ),
-                    ft.Container(
-                        content=ft.Column([
-                            ft.Icon(ft.icons.SATELLITE_ALT, color="orange", size=30),
-                            ft.Text("UPLINK", size=12, color="grey"),
-                            ft.Text("ENCRYPTED", size=20, weight="bold", color="orange"),
-                        ]),
-                        bgcolor="#1a1c2c", padding=20, border_radius=15, expand=True, border=ft.border.all(1, "#334155")
-                    ),
-                ], spacing=20),
-                ft.Container(
-                    content=ft.Column([
-                        ft.Text("CORE ENERGY", size=14, color="grey"),
-                        ft.ProgressBar(value=0.85, color="cyan", bgcolor="#001a33", height=10),
-                    ]),
-                    padding=20, bgcolor="#001122", border_radius=15
-                )
-            ], spacing=30)
-
+                    ft.Container(content=ft.Text("CORE: ONLINE"), bgcolor="#0a192f", padding=20, border_radius=15, expand=True, border=ft.border.all(1, "#1e3a8a")),
+                    ft.Container(content=ft.Text("NET: SECURE"), bgcolor="#0a192f", padding=20, border_radius=15, expand=True, border=ft.border.all(1, "#1e3a8a")),
+                ])
+            ], spacing=20)
         elif route_name == "ai":
-            chat_log = ft.Column(scroll="always", expand=True, spacing=10)
-            user_input = ft.TextField(
-                hint_text="Command J.A.R.V.I.S...",
-                expand=True,
-                border_color="cyan",
-                cursor_color="cyan",
-                focused_border_color="white",
-                text_style=ft.TextStyle(color="white"),
-                on_submit=lambda e: send_msg(e)
-            )
-
+            chat_log = ft.Column(scroll="always", expand=True)
+            user_input = ft.TextField(hint_text="Command...", expand=True, border_color="cyan")
             def send_msg(e):
                 if user_input.value:
-                    # User Bubble
-                    chat_log.controls.append(
-                        ft.Container(
-                            content=ft.Text(f"SIR: {user_input.value}", color="white"),
-                            alignment=ft.alignment.center_right,
-                            padding=10, bgcolor="#1e293b", border_radius=ft.border_radius.only(top_left=15, top_right=15, bottom_left=15)
-                        )
-                    )
-                    page.update()
-                    
-                    # AI Response
+                    chat_log.controls.append(ft.Container(content=ft.Text(f"SIR: {user_input.value}"), bgcolor="#1e293b", padding=10, border_radius=10))
                     try:
                         resp = model.generate_content(user_input.value)
-                        chat_log.controls.append(
-                            ft.Container(
-                                content=ft.Text(f"JARVIS: {resp.text}", color="cyan"),
-                                alignment=ft.alignment.center_left,
-                                padding=10, bgcolor="#0f172a", border=ft.border.all(1, "cyan"),
-                                border_radius=ft.border_radius.only(top_left=15, top_right=15, bottom_right=15)
-                            )
-                        )
-                    except:
-                        chat_log.controls.append(ft.Text("SYSTEM ERROR: NEURAL LINK FAILED", color="red"))
-                    
-                    user_input.value = ""
-                    page.update()
+                        chat_log.controls.append(ft.Container(content=ft.Text(f"JARVIS: {resp.text}", color="cyan"), bgcolor="#0f172a", padding=10, border_radius=10, border=ft.border.all(1, "cyan")))
+                    except: chat_log.controls.append(ft.Text("ERROR", color="red"))
+                    user_input.value = ""; page.update()
 
             content_area.content = ft.Column([
-                ft.Text("NEURAL INTERFACE", size=25, weight="bold", color="cyan"),
-                ft.Container(
-                    content=chat_log,
-                    bgcolor="#050a14", padding=20, border_radius=20, expand=True,
-                    border=ft.border.all(1, "#1e3a8a"), shadow=ft.BoxShadow(blur_radius=10, color="#001122")
-                ),
-                ft.Row([
-                    user_input,
-                    ft.IconButton(icon=ft.icons.SEND_ROUNDED, icon_color="cyan", icon_size=30, on_click=send_msg)
-                ], spacing=10)
+                ft.Text("NEURAL LINK", size=25, color="cyan"),
+                ft.Container(content=chat_log, bgcolor="#050a14", padding=15, border_radius=15, expand=True),
+                ft.Row([user_input, ft.IconButton(icon="send", on_click=send_msg, icon_color="cyan")])
             ])
-            
         page.update()
 
-    # --- Sidebar ---
     def build_sidebar():
         return ft.Container(
             content=ft.Column([
-                ft.Text("J.A.R.V.I.S.", size=30, weight="bold", color="cyan"),
-                ft.Text("OS VERSION 5.2", size=10, color="grey"),
-                ft.Divider(color="#1e3a8a", height=40),
-                ft.TextButton("DASHBOARD", icon=ft.icons.DASHBOARD, on_click=lambda _: route_change("home")),
-                ft.TextButton("AI CONSOLE", icon=ft.icons.SMART_TOY, on_click=lambda _: route_change("ai")),
+                ft.Text("J.A.R.V.I.S.", size=28, weight="bold", color="cyan"),
+                ft.Divider(color="#1e3a8a"),
+                ft.TextButton("DASHBOARD", on_click=lambda _: route_change("home")),
+                ft.TextButton("AI CONSOLE", on_click=lambda _: route_change("ai")),
                 ft.VerticalDivider(expand=True),
-                ft.ElevatedButton(
-                    "LOGOUT", icon=ft.icons.LOGOUT, on_click=lambda _: show_login(),
-                    style=ft.ButtonStyle(color="white", bgcolor="red", shape=ft.RoundedRectangleBorder(radius=10))
-                )
-            ], spacing=20),
-            width=220, bgcolor="#020617", padding=25,
-            border=ft.border.only(right=ft.border.BorderSide(1, "#1e3a8a"))
+                ft.ElevatedButton("LOGOUT", on_click=lambda _: show_login(), bgcolor="red", color="white")
+            ], spacing=15),
+            width=200, bgcolor="#020617", padding=20
         )
 
-    # --- Login ---
     def show_login():
         page.clean()
-        u_in = ft.TextField(label="USER IDENTITY", border_color="cyan", width=300)
-        p_in = ft.TextField(label="ACCESS CODE", password=True, border_color="cyan", width=300)
-        
+        u_in = ft.TextField(label="IDENTITY", width=280)
+        p_in = ft.TextField(label="CODE", password=True, width=280)
         def login_process(e):
             if u_in.value in USERS and USERS[u_in.value]["pass"] == p_in.value:
                 user_session["name"] = u_in.value
@@ -150,26 +79,21 @@ def main(page: ft.Page):
                 page.add(ft.Row([build_sidebar(), content_area], expand=True))
                 route_change("home")
             else:
-                page.snack_bar = ft.SnackBar(ft.Text("IDENTITY UNKNOWN"), bgcolor="red")
-                page.snack_bar.open = True
-                page.update()
+                page.snack_bar = ft.SnackBar(ft.Text("DENIED"), bgcolor="red")
+                page.snack_bar.open = True; page.update()
 
-        page.add(
-            ft.Container(
-                content=ft.Column([
-                    ft.Icon(ft.icons.FINGERPRINT, size=80, color="cyan"),
-                    ft.Text("BIOMETRIC LOGIN", size=30, weight="bold", color="cyan"),
-                    u_in, p_in,
-                    ft.ElevatedButton("AUTHORIZE", on_click=login_process, width=200, bgcolor="cyan", color="black")
-                ], horizontal_alignment="center", spacing=25),
-                alignment=ft.alignment.center, expand=True
-            )
-        )
+        page.add(ft.Container(content=ft.Column([
+            ft.Icon("lock", size=60, color="cyan"),
+            ft.Text("SECURE ACCESS", size=30, color="cyan"),
+            u_in, p_in,
+            ft.ElevatedButton("AUTHENTICATE", on_click=login_process, width=200)
+        ], horizontal_alignment="center", spacing=20), alignment=ft.alignment.center, expand=True))
         page.update()
 
     show_login()
 
 if __name__ == "__main__":
+    import os
     port = int(os.getenv("PORT", 8080))
-    ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=port)
-            
+    ft.app(target=main, view="web_browser", port=port)
+    
