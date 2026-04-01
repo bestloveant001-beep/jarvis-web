@@ -30,100 +30,91 @@ def save_user(u, p):
     db[u] = p
     with open(DB_FILE, "w") as f: json.dump(db, f)
 
-def send_telegram(msg):
-    try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
-    except: pass
-
 def main(page: ft.Page):
-    page.title = "J.A.R.V.I.S. ULTIMATE"
-    page.theme_mode = ft.ThemeMode.DARK
+    page.title = "J.A.R.V.I.S. LEGACY"
+    page.theme_mode = "dark"
     page.bgcolor = "#000814"
     page.vertical_alignment = "center"
     page.horizontal_alignment = "center"
 
     def start_loading():
         page.clean()
-        pb = ft.ProgressBar(width=300, color="cyan")
-        lt = ft.Text("SYSTEM BOOTING...", color="cyan", size=20, weight="bold")
+        pb = ft.ProgressBar(width=300)
+        lt = ft.Text("SYSTEM STARTING...", size=20)
         page.add(lt, pb)
         page.update()
-        time.sleep(1.5)
+        time.sleep(1)
         show_login()
 
     def show_dashboard(name):
         page.clean()
-        chat_log = ft.Column(scroll="always", height=350, spacing=10)
-        user_input = ft.TextField(hint_text="Message...", expand=True, border_color="cyan")
+        chat_log = ft.Column(scroll="always", height=300)
+        user_input = ft.TextField(hint_text="Message...", expand=True)
         ai_selector = ft.Dropdown(
             value="Dola",
             options=[ft.dropdown.Option("Dola"), ft.dropdown.Option("CatGPT")],
-            width=120, border_color="cyan"
+            width=120
         )
 
         def ask_ai(e):
             if not user_input.value: return
             msg = user_input.value
             who = ai_selector.value
-            chat_log.controls.append(ft.Text(f"YOU: {msg}", color="white", weight="bold"))
-            user_input.value = ""; page.update()
+            chat_log.controls.append(ft.Text("YOU: " + msg))
+            user_input.value = ""
+            page.update()
             
             try:
-                prompt = f"คุณคือ {who} ตอบคำถามนี้: {msg}"
-                response = model.generate_content(prompt)
-                color = "cyan" if who == "Dola" else "orange"
-                chat_log.controls.append(ft.Text(f"{who.upper()}: {response.text}", color=color))
+                p = "คุณคือ " + who + " ตอบคำถามนี้: " + msg
+                resp = model.generate_content(p)
+                chat_log.controls.append(ft.Text(who.upper() + ": " + resp.text))
             except:
-                chat_log.controls.append(ft.Text("ERROR: Check API Key", color="red"))
+                chat_log.controls.append(ft.Text("SYSTEM ERROR"))
             
-            chat_log.scroll_to(offset=-1, duration=300)
             page.update()
 
         page.add(
-            ft.Container(
-                content=ft.Column([
-                    ft.Text("MAIN CONSOLE", size=25, color="cyan", weight="bold"),
-                    ft.Divider(color="cyan"),
-                    ft.Container(content=chat_log, padding=15, bgcolor="#001529", border_radius=15),
-                    ft.Row([ai_selector, user_input, ft.ElevatedButton("SEND", on_click=ask_ai, bgcolor="cyan", color="black")]),
-                    ft.TextButton("SHUTDOWN", on_click=lambda _: start_loading(), color="red")
-                ], horizontal_alignment="center"),
-                padding=25, border=ft.border.all(2, "cyan"), border_radius=25, width=500
-            )
+            ft.Text("MAIN CONSOLE", size=25, weight="bold"),
+            chat_log,
+            ft.Row([ai_selector, user_input, ft.ElevatedButton("SEND", on_click=ask_ai)]),
+            ft.ElevatedButton("LOGOUT", on_click=lambda _: start_loading())
         )
         page.update()
 
     def show_login():
         page.clean()
-        u = ft.TextField(label="USER ID", width=300, border_color="cyan")
-        p = ft.TextField(label="ACCESS CODE", password=True, width=300, border_color="cyan")
+        u = ft.TextField(label="USER ID", width=300)
+        p = ft.TextField(label="ACCESS CODE", password=True, width=300)
         def login_click(e):
             db = load_db()
             if u.value == ADMIN_USER and p.value == ADMIN_CODE: show_dashboard("SIR")
             elif u.value in db and db[u.value] == p.value: show_dashboard(u.value)
             else: 
-                page.snack_bar = ft.SnackBar(ft.Text("DENIED"), open=True)
+                page.add(ft.Text("DENIED", color="red"))
                 page.update()
         page.add(
-            ft.Text("SECURITY CHECK", size=30, color="cyan", weight="bold"),
+            ft.Text("SECURITY CHECK", size=30, weight="bold"),
             u, p, 
-            ft.ElevatedButton("LOGIN", on_click=login_click, width=200, bgcolor="cyan", color="black"),
-            ft.TextButton("REGISTER", on_click=lambda _: show_reg(), color="grey")
+            ft.ElevatedButton("LOGIN", on_click=login_click),
+            ft.ElevatedButton("REGISTER", on_click=lambda _: show_reg())
         )
         page.update()
 
     def show_reg():
         page.clean()
-        nu, np = ft.TextField(label="NEW USER", width=300), ft.TextField(label="NEW PASS", width=300)
+        nu = ft.TextField(label="NEW USER", width=300)
+        np = ft.TextField(label="NEW PASS", width=300)
         def reg_click(e):
-            if nu.value and np.value: save_user(nu.value, np.value); show_login()
-        page.add(ft.Text("NEW ID"), nu, np, ft.ElevatedButton("SAVE", on_click=reg_click), ft.TextButton("BACK", on_click=lambda _: show_login()))
+            if nu.value and np.value: 
+                save_user(nu.value, np.value)
+                show_login()
+        page.add(ft.Text("NEW ID"), nu, np, ft.ElevatedButton("SAVE", on_click=reg_click))
         page.update()
 
     start_loading()
 
 if __name__ == "__main__":
+    import os
     port = int(os.getenv("PORT", 8080))
-    ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=port)
-    
+    ft.app(target=main, view="web_browser", port=port)
+        
