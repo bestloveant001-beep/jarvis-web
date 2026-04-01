@@ -1,36 +1,93 @@
-import flet as ft
+from flask import Flask, render_template_string, request, redirect, session
 import os
+import google.generativeai as genai
 
-def main(page: ft.Page):
-    page.title = "J.A.R.V.I.S. RECOVERY"
-    page.bgcolor = "#00050a"
-    page.theme_mode = "dark"
-    page.vertical_alignment = "center"
-    page.horizontal_alignment = "center"
+app = Flask(__name__)
+app.secret_key = "ironman_secret" # สำหรับระบบ Login
 
-    def on_login(e):
-        if u.value == "ADMIN" and p.value == "159753":
-            page.clean()
-            page.add(
-                ft.Text("ACCESS GRANTED", size=30, color="cyan", weight="bold"),
-                ft.Text("SYSTEM ONLINE / DASHBOARD READY", color="white"),
-                ft.ElevatedButton("LOGOUT", on_click=lambda _: main(page))
-            )
-        else:
-            page.add(ft.Text("DENIED", color="red"))
-            page.update()
+# --- 🔐 SECURITY ---
+USERS = {"ADMIN": "159753"}
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyD-mgndxGz8Ddfy83JWoDohZwGQ_wRzrt4")
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
-    u = ft.TextField(label="USER", width=250, border_color="cyan")
-    p = ft.TextField(label="PASS", password=True, width=250, border_color="cyan")
-    
-    page.clean()
-    page.add(
-        ft.Icon("shield_lock", size=50, color="cyan"),
-        ft.Text("J.A.R.V.I.S. RECOVERY", size=20, color="cyan"),
-        u, p,
-        ft.ElevatedButton("ENTER", on_click=on_login, bgcolor="cyan", color="black")
-    )
+# --- 🎨 HTML TEMPLATE (รวมหน้า Login & Dashboard) ---
+HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>J.A.R.V.I.S. OS</title>
+    <style>
+        body { background: #00050a; color: cyan; font-family: sans-serif; text-align: center; padding: 20px; }
+        .card { background: #0a192f; border: 1px solid #1e3a8a; padding: 20px; border_radius: 15px; margin-top: 20px; }
+        input { width: 80%; padding: 10px; margin: 10px; background: #000; color: cyan; border: 1px solid cyan; }
+        button { background: cyan; color: black; padding: 10px 20px; border: none; font-weight: bold; cursor: pointer; }
+        .chat-box { height: 200px; overflow-y: scroll; text-align: left; background: #050a14; padding: 10px; border: 1px solid #1e3a8a; }
+    </style>
+</head>
+<body>
+    {% if not logged_in %}
+        <h1>SECURE LOGIN</h1>
+        <form method="POST" action="/login">
+            <input type="text" name="user" placeholder="IDENTITY"><br>
+            <input type="password" name="pass" placeholder="ACCESS CODE"><br>
+            <button type="submit">AUTHENTICATE</button>
+        </form>
+    {% else %}
+        <h1>J.A.R.V.I.S. ONLINE</h1>
+        <div class="card">
+            <h3>SYSTEM STATUS</h3>
+            <p>CPU: 32% | NET: SECURE</p>
+            <a href="/logout" style="color:red">LOGOUT</a>
+        </div>
+        <div class="card">
+            <h3>AI CONSOLE</h3>
+            <div class="chat-box" id="chat">
+                {% for msg in chat_history %}
+                    <p><b>{{ msg.role }}:</b> {{ msg.text }}</p>
+                {% endfor %}
+            </div>
+            <form method="POST" action="/chat">
+                <input type="text" name="msg" placeholder="Command...">
+                <button type="submit">SEND</button>
+            </form>
+        </div>
+    {% endif %}
+</body>
+</html>
+"""
+
+@app.route('/')
+def index():
+    return render_template_string(HTML_TEMPLATE, logged_in=session.get('user'), chat_history=session.get('chat', []))
+
+@app.route('/login', methods=['POST'])
+def login():
+    user = request.form.get('user')
+    pw = request.form.get('pass')
+    if user in USERS and USERS[user] == pw:
+        session['user'] = user
+        session['chat'] = []
+    return redirect('/')
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    msg = request.form.get('msg')
+    if msg and session.get('user'):
+        resp = model.generate_content(msg)
+        history = session.get('chat', [])
+        history.append({"role": "SIR", "text": msg})
+        history.append({"role": "JARVIS", "text": resp.text})
+        session['chat'] = history
+    return redirect('/')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8080))
-    ft.app(target=main, view="web_browser", port=port)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port)
+    
