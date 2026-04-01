@@ -33,9 +33,9 @@ def main(page: ft.Page):
     page.vertical_alignment = "center"
     page.horizontal_alignment = "center"
 
-    def show_dashboard(name):
-        page.clean()
-        page.add(ft.Container(content=ft.Column([
-            ft.Text("J.A.R.V.I.S. ONLINE", size=30, weight="bold", color="cyan"),
-            ft.Text(f"
+    if __name__ == "__main__":
+    import os
+    port = int(os.getenv("PORT", 8080))
+    ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=port)
+
       
