@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>[ MARK-V20 ] JS HUD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --iron-cyan: #00d2ff; }
+        body { background: radial-gradient(circle, #001a2d 0%, #000 100%); color: var(--iron-cyan); font-family: 'Orbitron', sans-serif; margin: 0; padding: 20px; height: 100vh; overflow: hidden; }
+        .hud-main { border: 1px solid rgba(0,210,255,0.3); background: rgba(0,30,50,0.2); height: 70vh; overflow-y: auto; padding: 15px; box-shadow: inset 0 0 20px rgba(0,210,255,0.1); }
+        .chat-row { margin-bottom: 20px; border-left: 2px solid var(--iron-cyan); padding-left: 10px; }
+        .u-msg { color: #fff; font-size: 0.8em; opacity: 0.7; }
+        .j-msg { font-size: 1em; font-weight: bold; margin-top: 5px; }
+        .footer { margin-top: 15px; display: flex; gap: 8px; }
+        input { flex: 1; background: rgba(0,210,255,0.05); border: 1px solid var(--iron-cyan); padding: 12px; color: var(--iron-cyan); font-family: 'Orbitron'; outline: none; }
+        button { background: var(--iron-cyan); border: none; padding: 0 20px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div style="font-size: 0.7em; margin-bottom: 10px;">MARK-V20 // JS_ENGINE: ACTIVE</div>
+    <div class="hud-main" id="chat-box"></div>
+    <div class="footer">
+        <input type="text" id="cmd" placeholder="SYSTEM WAITING..." autocomplete="off">
+        <button onclick="sendCommand()">EXE</button>
+    </div>
+
+    <script>
+        function speak(text) {
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'th-TH'; utter.pitch = 0.8; 
+            window.speechSynthesis.speak(utter);
+        }
+
+        async function getSensors() {
+            let s = { battery: "Unknown", lat: "0", time: new Date().toLocaleTimeString() };
+            try {
+                const b = await navigator.getBattery();
+                s.battery = Math.round(b.level * 100) + "%";
+            } catch(e) {}
+            return s;
+        }
+
+        async function loadHistory() {
+            const res = await fetch('/api/history');
+            const history = await res.json();
+            const box = document.getElementById('chat-box');
+            box.innerHTML = history.map(h => `
+                <div class="chat-row">
+                    <div class="u-msg">PILOT: ${h.u}</div>
+                    <div class="j-msg">JARVIS: ${h.j}</div>
+                </div>`).join('');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function sendCommand() {
+            const input = document.getElementById('cmd');
+            const msg = input.value;
+            if(!msg) return;
+            
+            const sensorData = await getSensors();
+            const res = await fetch('/api/ask', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message: msg, device: sensorData })
+            });
+            const data = await res.json();
+            await loadHistory();
+            speak(data.reply);
+            input.value = "";
+        }
+
+        window.onload = () => { loadHistory(); speak("ระบบจาร์วิส เจเอส ออนไลน์แล้วครับ"); };
+    </script>
+</body>
+</html>
