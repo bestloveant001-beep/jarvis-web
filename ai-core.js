@@ -1,9 +1,8 @@
-// [ MARK-V20 // AI-CORE: BILINGUAL-STABLE-V2 ]
+// [ MARK-V20 // AI-CORE: JS-WEB-STABLE ]
 const API_KEY = "AIzaSyDNG91SpfOI2qeHBnhveV1zOUjxEbRoakQ"; 
 
 async function askJarvis(userInput) {
-    console.log("[AI_CORE] Testing connection via v1beta...");
-    // สังเกตตรงนี้ต้องเป็น v1beta เท่านั้น
+    console.log("[AI_CORE] Initiating Neural Link via v1beta...");
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
     
     try {
@@ -13,27 +12,21 @@ async function askJarvis(userInput) {
             body: JSON.stringify({
                 contents: [{
                     parts: [{
-                        text: `You are JARVIS, a bilingual AI for Sir Somdet. 
-                        Personality: 50% sarcastic, British-style. 
-                        Response: Thai and English mix. 
-                        User: "${userInput}"`
+                        text: `You are JARVIS, a bilingual AI for Sir Somdet (Pilot Somdet). 
+                        Personality (50% Sarcastic): Professional, British-style, smart-aleck but loyal. 
+                        Response: Mix Thai and English. Be cool and concise. 
+                        User Prompt: "${userInput}"`
                     }]
                 }]
             })
         });
 
         const data = await response.json();
-        
         if (data.candidates && data.candidates[0].content) {
             return data.candidates[0].content.parts[0].text;
         } 
-        
-        if (data.error) {
-            return `Mainframe Error: ${data.error.message}`;
-        }
-
-        return "Systems unstable, Sir.";
+        return data.error ? `Mainframe Error: ${data.error.message}` : "Systems unstable, Sir.";
     } catch (error) {
-        return "Connection lost, Sir.";
+        return "Connection lost, Sir Somdet. สัญญาณขาดหายครับ";
     }
 }
