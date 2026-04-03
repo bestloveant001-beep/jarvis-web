@@ -1,10 +1,11 @@
-// [ MARK-V20 // AI-CORE: BILINGUAL FINAL STABLE ]
+// [ MARK-V20 // AI-CORE: BILINGUAL STABLE FINAL ]
 const API_KEY = "AIzaSyDNG91SpfOI2qeHBnhveV1zOUjxEbRoakQ"; 
 
 async function askJarvis(userInput) {
-    console.log("[AI_CORE] Initiating Neural Link...");
+    console.log("[AI_CORE] Initiating Neural Link via v1beta...");
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+        // เปลี่ยนกลับมาใช้ v1beta ซึ่งรองรับ gemini-1.5-flash แน่นอนในตอนนี้
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -13,7 +14,7 @@ async function askJarvis(userInput) {
                         text: `You are JARVIS, a bilingual AI for Sir Somdet. 
                         Personality: 50% sarcastic, British-style, very smart. 
                         Response: mix Thai and English. 
-                        Current user prompt: "${userInput}"`
+                        User Prompt: "${userInput}"`
                     }]
                 }]
             })
@@ -21,17 +22,17 @@ async function askJarvis(userInput) {
 
         const data = await response.json();
         
-        // ถ้าเชื่อมต่อสำเร็จ จะต้องมีข้อมูล candidates
+        // ตรวจสอบข้อมูล
         if (data.candidates && data.candidates[0].content) {
             return data.candidates[0].content.parts[0].text;
         } 
         
-        // ถ้า Google ส่ง Error กลับมา
         if (data.error) {
+            console.error("DEBUG_ERROR:", data.error.message);
             return `Sir, the mainframe says: ${data.error.message}`;
         }
 
-        return "Systems are slightly unstable, Sir Somdet. (No data returned)";
+        return "Systems are slightly unstable, Sir Somdet.";
     } catch (error) {
         return "Connection lost, Sir. Please check your network.";
     }
@@ -44,4 +45,4 @@ function jarvisSpeak(text) {
     utter.pitch = 0.85;
     utter.rate = 1.0;
     window.speechSynthesis.speak(utter);
-            }
+}
