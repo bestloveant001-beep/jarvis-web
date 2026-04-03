@@ -1,16 +1,20 @@
-// [ MARK-V20 // AI-CORE ENGINE REPAIRED ]
+// [ MARK-V20 // AI-CORE ENGINE STABLE V1 ]
 const API_KEY = "AIzaSyDNG91SpfOI2qeHBnhveV1zOUjxEbRoakQ"; 
 
 async function askJarvis(userInput) {
+    console.log("[AI_CORE] Sending command to v1 engine...");
     try {
-        // แก้ไข URL เป็น gemini-pro เพื่อความเสถียรสูงสุดในเวอร์ชัน v1beta
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
+        // ใช้ URL เวอร์ชัน v1 (เสถียรที่สุด)
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 contents: [{
                     parts: [{
-                        text: `คุณคือ JARVIS ผู้ช่วยในชุดเกราะ MARK-V20 ตอบท่านสมเดชอย่างเท่และสั้น: "${userInput}"`
+                        text: `คุณคือ JARVIS ผู้ช่วยอัจฉริยะในชุดเกราะ MARK-V20 ของคุณสมเดช (Somdet) 
+                        จงตอบคำถามอย่างสุขุม เท่ และเป็นมืออาชีพ 
+                        คำถามคือ: "${userInput}" 
+                        (ตอบเป็นภาษาไทยสั้นๆ ไม่เกิน 2 ประโยค)`
                     }]
                 }]
             })
@@ -18,19 +22,21 @@ async function askJarvis(userInput) {
 
         const data = await response.json();
         
+        // ตรวจสอบโครงสร้างข้อมูลที่ส่งกลับมา
         if (data.error) {
-            console.error("AI_CORE_ERROR:", data.error.message);
-            return "ขออภัยครับท่านสมเดช ระบบแจ้งข้อผิดพลาด: " + data.error.message;
+            console.error("API_ERROR:", data.error.message);
+            return "ขออภัยครับท่านสมเดช ระบบ AI Core แจ้งข้อผิดพลาด: " + data.error.message;
         }
 
         if (data.candidates && data.candidates[0].content) {
             return data.candidates[0].content.parts[0].text;
         } else {
-            return "ขออภัยครับ จาร์วิสไม่สามารถประมวลผลคำตอบได้ในขณะนี้";
+            return "ขออภัยครับท่านสมเดช จาร์วิสไม่ได้รับข้อมูลตอบกลับจากศูนย์บัญชาการ";
         }
 
     } catch (error) {
-        return "การเชื่อมต่อกับสมองกลขัดข้องครับท่านสมเดช";
+        console.error("FETCH_ERROR:", error);
+        return "การเชื่อมต่อกับสมองกลขัดข้องครับท่านสมเดช กรุณาตรวจสอบสัญญาณเน็ตเวิร์ก";
     }
 }
 
