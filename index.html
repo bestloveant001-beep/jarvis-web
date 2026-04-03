@@ -1,127 +1,119 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>[ MARK-V20 ] SATELLITE HUD</title>
+    <title>[ MARK-V20 ] AI SATELLITE HUD</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Leaflet CSS สำหรับแผนที่ดาวเทียม -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root { --iron-cyan: #00d2ff; --iron-glow: rgba(0, 210, 255, 0.4); }
         body { background: radial-gradient(circle, #001a2d 0%, #000 100%); color: var(--iron-cyan); font-family: 'Orbitron', sans-serif; margin: 0; padding: 15px; height: 100vh; overflow: hidden; }
-        
-        /* วงแหวน Arc Reactor พื้นหลัง */
         .arc-bg { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90vw; height: 90vw; border: 1px solid var(--iron-glow); border-radius: 50%; pointer-events: none; opacity: 0.05; animation: rotate 40s linear infinite; }
         @keyframes rotate { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
-
-        .header { border-bottom: 2px solid var(--iron-cyan); padding-bottom: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; font-size: 0.6em; letter-spacing: 1px; }
-
-        /* ส่วนแสดงแผนที่ดาวเทียม */
-        #map { height: 25vh; border: 1px solid var(--iron-cyan); margin-bottom: 10px; background: #000; filter: hue-rotate(180deg) brightness(0.8) contrast(1.2); opacity: 0.7; box-shadow: 0 0 15px var(--iron-glow); }
-
-        /* ส่วนแสดงการสนทนา */
-        .hud-main { border: 1px solid var(--iron-glow); background: rgba(0, 30, 50, 0.1); height: 45vh; overflow-y: auto; padding: 12px; position: relative; scroll-behavior: smooth; border-radius: 4px; }
+        .header { border-bottom: 2px solid var(--iron-cyan); padding-bottom: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; font-size: 0.6em; }
+        #map { height: 20vh; border: 1px solid var(--iron-cyan); margin-bottom: 10px; opacity: 0.7; filter: hue-rotate(180deg) brightness(0.8); }
+        .hud-main { border: 1px solid var(--iron-glow); background: rgba(0, 30, 50, 0.1); height: 50vh; overflow-y: auto; padding: 12px; position: relative; scroll-behavior: smooth; }
         .chat-row { margin-bottom: 15px; border-left: 2px solid var(--iron-cyan); padding-left: 8px; animation: fadeIn 0.4s; }
-        .u-msg { color: #fff; font-size: 0.75em; opacity: 0.6; }
-        .j-msg { color: var(--iron-cyan); font-size: 0.9em; font-weight: bold; margin-top: 3px; line-height: 1.3; }
-
+        .u-msg { color: #fff; font-size: 0.7em; opacity: 0.6; text-transform: uppercase; }
+        .j-msg { color: var(--iron-cyan); font-size: 0.9em; font-weight: bold; margin-top: 3px; line-height: 1.4; }
         .footer { margin-top: 10px; display: flex; gap: 5px; }
-        input { flex: 1; background: rgba(0, 210, 255, 0.05); border: 1px solid var(--iron-cyan); padding: 12px; color: var(--iron-cyan); font-family: 'Orbitron'; font-size: 0.9em; outline: none; }
+        input { flex: 1; background: rgba(0, 210, 255, 0.1); border: 1px solid var(--iron-cyan); padding: 12px; color: var(--iron-cyan); font-family: 'Orbitron'; outline: none; }
         button { background: var(--iron-cyan); border: none; padding: 0 20px; font-weight: bold; cursor: pointer; color: #000; }
-        
-        .sat-info { font-size: 0.5em; margin-bottom: 5px; color: #fff; opacity: 0.8; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .status-bar { font-size: 0.5em; margin-top: 5px; color: #555; }
     </style>
 </head>
 <body>
     <div class="arc-bg"></div>
     <div class="header">
-        <div>MARK-V20 // SATELLITE_LINK: ACTIVE</div>
+        <div>MARK-V20 // AI_CORE: ACTIVE</div>
         <div id="clock">00:00:00</div>
         <div>PILOT: SOMDET_S</div>
     </div>
 
-    <div class="sat-info" id="coords">COORDS: SCANNING... | ALT: 0m</div>
-    <div id="map"></div> <!-- แผนที่ดาวเทียมจะอยู่ตรงนี้ -->
-
+    <div id="map"></div>
     <div class="hud-main" id="chat-box"></div>
 
     <div class="footer">
-        <input type="text" id="cmd" placeholder="WAITING COMMAND..." autocomplete="off">
+        <input type="text" id="cmd" placeholder="WAITING FOR COMMAND..." autocomplete="off">
         <button onclick="sendCommand()">EXE</button>
     </div>
+    <div class="status-bar" id="status">AI_ENGINE: READY | DATA_LINK: ENCRYPTED</div>
 
-    <!-- Leaflet JS สำหรับแผนที่ -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        let map, marker;
+        // 🔑 ใส่ API Key ของท่านตรงนี้ครับ
+        const API_KEY = "AIzaSyDNG91SpfOI2qeHBnhveV1zOUjxEbRoakQ"; 
         
-        // 🌍 เริ่มต้นระบบดาวเทียม
+        let map, marker;
         function initMap(lat, lon) {
             if (!map) {
-                map = L.map('map', { zoomControl: false, attributionControl: false }).setView([lat, lon], 15);
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                    maxZoom: 18
-                }).addTo(map);
-                marker = L.circleMarker([lat, lon], { color: '#00d2ff', radius: 10 }).addTo(map);
-            } else {
-                map.setView([lat, lon]);
-                marker.setLatLng([lat, lon]);
-            }
-        }
-
-        function jarvisBrain(input, battery, lat, lon) {
-            const ui = input.toLowerCase();
-            if (ui.includes("สวัสดี") || ui.includes("ไง")) return `สวัสดีครับท่านสมเดช ดาวเทียมเชื่อมต่อแล้ว แบตเตอรี่ ${battery} พิกัดปัจจุบันอยู่ที่ ${lat}, ${lon} ครับ`;
-            if (ui.includes("สแกน") || ui.includes("ที่ไหน") || ui.includes("พิกัด")) return `ทำการสแกนพิกัดดาวเทียม... พบท่านสมเดชที่ตำแหน่ง ละติจูด ${lat} ลองจิจูด ${lon} พื้นที่โดยรอบปกติครับ`;
-            if (ui.includes("พลังงาน") || ui.includes("แบต")) return `รายงานสถานะพลังงาน: อุปกรณ์เหลือ ${battery} ระบบดาวเทียมใช้พลังงาน 2% ครับ`;
-            return `รับทราบครับท่านสมเดช คำสั่ง '${input}' กำลังส่งเข้าดาวเทียมประมวลผลครับ`;
+                map = L.map('map', { zoomControl: false, attributionControl: false }).setView([lat, lon], 16);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+                marker = L.circleMarker([lat, lon], { color: '#00d2ff', radius: 8 }).addTo(map);
+            } else { map.setView([lat, lon]); marker.setLatLng([lat, lon]); }
         }
 
         function speak(text) {
+            window.speechSynthesis.cancel(); // หยุดเสียงเก่าก่อนพูดใหม่
             const utter = new SpeechSynthesisUtterance(text);
-            utter.lang = 'th-TH'; utter.pitch = 0.8;
+            utter.lang = 'th-TH'; utter.pitch = 0.8; utter.rate = 1.1;
             window.speechSynthesis.speak(utter);
+        }
+
+        // 🧠 ระบบ AI อัจฉริยะ (Gemini AI)
+        async function getAIResponse(userInput, sensors) {
+            document.getElementById('status').innerText = "AI_ENGINE: PROCESSING...";
+            try {
+                const prompt = `คุณคือ JARVIS AI ผู้ช่วยในชุดเกราะ Iron Man MARK-V20 ของคุณสมเดช (Somdet) 
+                ข้อมูลปัจจุบัน: แบตเตอรี่ ${sensors.battery}, พิกัด ${sensors.lat},${sensors.lon}, เวลา ${sensors.time}
+                คำสั่งจากคุณสมเดช: "${userInput}"
+                จงตอบกลับด้วยความสุขุม ทะเยอทะยาน และเป็นมืออาชีพแบบ Jarvis (ตอบสั้นๆ เท่ๆ ไม่เกิน 2-3 ประโยค)`;
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                const data = await response.json();
+                document.getElementById('status').innerText = "AI_ENGINE: ONLINE";
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                return "ขออภัยครับท่านสมเดช ระบบ AI Core ขัดข้อง กรุณาเช็ค API Key ครับ";
+            }
         }
 
         async function sendCommand() {
             const input = document.getElementById('cmd');
-            if(!input.value) return;
+            const msg = input.value;
+            if(!msg) return;
 
-            // ดึงพิกัดและแบตเตอรี่จริง
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 const lat = pos.coords.latitude.toFixed(4);
                 const lon = pos.coords.longitude.toFixed(4);
-                const alt = pos.coords.altitude ? pos.coords.altitude.toFixed(0) : 0;
-                
-                document.getElementById('coords').innerText = `COORDS: LAT ${lat} LON ${lon} | ALT: ${alt}m`;
-                initMap(lat, lon); // อัปเดตแผนที่
+                initMap(lat, lon);
 
                 let battery = "Unknown";
                 try { const b = await navigator.getBattery(); battery = Math.round(b.level * 100) + "%"; } catch(e) {}
 
-                const reply = jarvisBrain(input.value, battery, lat, lon);
+                const sensors = { battery, lat, lon, time: new Date().toLocaleTimeString() };
+                
+                // เรียกใช้ AI จริงๆ
+                const reply = await getAIResponse(msg, sensors);
                 
                 const box = document.getElementById('chat-box');
-                box.innerHTML += `<div class="chat-row"><div class="u-msg">>> INCOMING: ${input.value}</div><div class="j-msg">JARVIS: ${reply}</div></div>`;
+                box.innerHTML += `<div class="chat-row"><div class="u-msg">>> PILOT_INPUT: ${msg}</div><div class="j-msg">JARVIS: ${reply}</div></div>`;
                 box.scrollTop = box.scrollHeight;
                 
                 speak(reply);
                 input.value = "";
-            }, () => {
-                alert("กรุณาเปิด GPS และอนุญาตการเข้าถึงพิกัดด้วยครับท่านสมเดช");
             });
         }
 
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-        
         window.onload = () => {
-            // ขอพิกัดทันทีที่เปิดเครื่อง
-            navigator.geolocation.getCurrentPosition((p) => {
-                initMap(p.coords.latitude, p.coords.longitude);
-                document.getElementById('coords').innerText = `COORDS: LAT ${p.coords.latitude.toFixed(4)} LON ${p.coords.longitude.toFixed(4)} | ALT: 0m`;
-            });
-            speak("ระบบดาวเทียม มาร์ค วี ยี่สิบ ออนไลน์แล้วครับ ท่านสมเดช");
+            navigator.geolocation.getCurrentPosition(p => initMap(p.coords.latitude, p.coords.longitude));
+            speak("ระบบ เอไอ คอร์ ออนไลน์แล้วครับท่านสมเดช");
         };
     </script>
 </body>
