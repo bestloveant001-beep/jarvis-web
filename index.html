@@ -1,154 +1,188 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>[ MARK-V20 ] MOBILE HUD ELITE</title>
+    <title>[ MARK-V20 ] MULTI-WINDOW OS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        :root { --iron-cyan: #00d2ff; --iron-glow: rgba(0, 210, 255, 0.4); --warning: #ff3c3c; }
-        body { background: #000; color: var(--iron-cyan); font-family: 'Orbitron', sans-serif; margin: 0; height: 100vh; overflow: hidden; touch-action: manipulation; }
+        :root { --iron-cyan: #00d2ff; --iron-glow: rgba(0, 210, 255, 0.3); --bg: #000a12; }
+        body { background: var(--bg); color: var(--iron-cyan); font-family: 'Orbitron', sans-serif; margin: 0; height: 100vh; overflow: hidden; }
+
+        /* Desktop/HUD Wallpaper */
+        .desktop { position: relative; width: 100%; height: 100%; background: radial-gradient(circle, #001a2d 0%, #000 100%); }
         
-        /* HUD Layout */
-        .hud-container { display: flex; flex-direction: column; height: 100%; padding: 10px; box-sizing: border-box; }
-        
-        .header { display: flex; justify-content: space-between; font-size: 0.55em; border-bottom: 1px solid var(--iron-glow); padding-bottom: 5px; }
-        
-        /* Mobile Sensors Bar */
-        .sensor-bar { display: flex; justify-content: space-around; background: rgba(0, 210, 255, 0.1); padding: 5px; font-size: 0.5em; margin: 5px 0; border: 1px solid var(--iron-glow); }
-        .critical { color: var(--warning); animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.3; } }
+        /* Window Style */
+        .window { position: absolute; border: 1px solid var(--iron-cyan); background: rgba(0, 20, 35, 0.85); backdrop-filter: blur(5px); display: flex; flex-direction: column; min-width: 200px; box-shadow: 0 0 15px var(--iron-glow); z-index: 10; transition: opacity 0.3s; }
+        .window-header { background: var(--iron-cyan); color: #000; padding: 5px 10px; font-size: 0.6em; font-weight: bold; cursor: move; display: flex; justify-content: space-between; align-items: center; }
+        .window-content { padding: 10px; flex: 1; overflow: auto; }
+        .close-btn { cursor: pointer; background: #000; color: var(--iron-cyan); padding: 0 5px; border: 1px solid #000; }
 
-        #map { height: 18vh; border: 1px solid var(--iron-cyan); opacity: 0.8; filter: hue-rotate(180deg) brightness(0.7); }
+        /* Specific Window Sizes */
+        #win-map { top: 50px; left: 10px; width: 300px; height: 200px; }
+        #win-ai { top: 260px; left: 10px; width: 320px; height: 300px; }
+        #win-status { top: 50px; right: 10px; width: 180px; }
 
-        .chat-box { flex: 1; overflow-y: auto; border: 1px solid var(--iron-glow); margin: 10px 0; padding: 10px; background: rgba(0, 30, 50, 0.2); font-size: 0.85em; }
-        .j-msg { color: var(--iron-cyan); margin-bottom: 10px; border-left: 2px solid var(--iron-cyan); padding-left: 5px; }
-        .u-msg { color: #fff; opacity: 0.6; font-size: 0.8em; margin-bottom: 5px; }
+        /* Map & AI internal */
+        #map { width: 100%; height: 100%; filter: hue-rotate(180deg) invert(0.9); }
+        .chat-log { height: 180px; overflow-y: auto; font-size: 0.75em; border-bottom: 1px solid var(--iron-glow); margin-bottom: 5px; }
+        .u-msg { color: #fff; opacity: 0.5; }
+        .j-msg { color: var(--iron-cyan); margin-bottom: 8px; }
 
-        .controls { display: flex; gap: 5px; padding-bottom: env(safe-area-inset-bottom); }
-        input { flex: 1; background: #001a2d; border: 1px solid var(--iron-cyan); color: var(--iron-cyan); padding: 15px; font-family: 'Orbitron'; font-size: 16px; border-radius: 5px; }
-        button { background: var(--iron-cyan); border: none; padding: 0 20px; color: #000; font-weight: bold; border-radius: 5px; }
+        /* Bottom Taskbar */
+        .taskbar { position: fixed; bottom: 0; width: 100%; background: rgba(0, 0, 0, 0.8); border-top: 1px solid var(--iron-cyan); display: flex; justify-content: center; gap: 15px; padding: 10px 0; z-index: 1000; }
+        .app-icon { border: 1px solid var(--iron-cyan); padding: 5px 15px; font-size: 0.7em; cursor: pointer; transition: 0.3s; }
+        .app-icon:active { background: var(--iron-cyan); color: #000; }
 
-        /* Animation Background */
-        .scanner-line { position: fixed; top: 0; left: 0; width: 100%; height: 2px; background: var(--iron-glow); box-shadow: 0 0 10px var(--iron-cyan); animation: scan 4s linear infinite; pointer-events: none; z-index: 100; }
-        @keyframes scan { from { top: 0; } to { top: 100vh; } }
+        input { width: 100%; background: none; border: 1px solid var(--iron-glow); color: var(--iron-cyan); padding: 8px; font-family: 'Orbitron'; box-sizing: border-box; font-size: 14px; }
     </style>
 </head>
 <body>
-    <div class="scanner-line"></div>
-    <div class="hud-container">
-        <div class="header">
-            <span>MARK-V20 // MOBILE_LINK</span>
-            <span id="clock">00:00:00</span>
-            <span>PILOT: SOMDET_S</span>
+
+<div class="desktop" id="desktop">
+    <!-- Window: Map -->
+    <div class="window" id="win-map">
+        <div class="window-header" onmousedown="dragWin(this)">
+            <span>SATELLITE_LINK</span>
+            <span class="close-btn" onclick="toggleWin('win-map')">X</span>
         </div>
+        <div class="window-content" style="padding:0;"><div id="map"></div></div>
+    </div>
 
-        <div class="sensor-bar">
-            <span id="bat-val">BAT: --%</span>
-            <span id="net-val">NET: --</span>
-            <span id="tilt-val">GYRO: STABLE</span>
+    <!-- Window: AI Jarvis -->
+    <div class="window" id="win-ai">
+        <div class="window-header" onmousedown="dragWin(this)">
+            <span>JARVIS_CORE</span>
+            <span class="close-btn" onclick="toggleWin('win-ai')">X</span>
         </div>
-
-        <div id="map"></div>
-
-        <div class="chat-box" id="chat-box">
-            <div class="j-msg">JARVIS: ระบบเคลื่อนที่พร้อมใช้งานแล้วครับท่านสมเดช ทุกเซ็นเซอร์ออนไลน์</div>
-        </div>
-
-        <div class="controls">
-            <input type="text" id="cmd" placeholder="COMMAND..." autocomplete="off">
-            <button onclick="sendCommand()">EXE</button>
+        <div class="window-content">
+            <div id="chat-box" class="chat-log"></div>
+            <input type="text" id="cmd" placeholder="COMMAND..." onkeypress="if(event.key==='Enter') sendCommand()">
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const API_KEY = "AIzaSyDNG91SpfOI2qeHBnhveV1zOUjxEbRoakQ"; // API Key เดิมของท่าน
-        let map, marker;
+    <!-- Window: Status -->
+    <div class="window" id="win-status">
+        <div class="window-header" onmousedown="dragWin(this)">
+            <span>SYSTEM_STATS</span>
+            <span class="close-btn" onclick="toggleWin('win-status')">X</span>
+        </div>
+        <div class="window-content" style="font-size: 0.6em;">
+            <div id="bat">BATTERY: --%</div>
+            <div id="net">NET: ONLINE</div>
+            <div id="loc">LOC: SCANNING...</div>
+        </div>
+    </div>
+</div>
 
-        // 📳 ระบบสั่น (Vibration)
-        function haptic() { if(navigator.vibrate) navigator.vibrate(40); }
+<div class="taskbar">
+    <div class="app-icon" onclick="toggleWin('win-map')">MAP</div>
+    <div class="app-icon" onclick="toggleWin('win-ai')">AI</div>
+    <div class="app-icon" onclick="toggleWin('win-status')">STATS</div>
+</div>
 
-        // 🔋 ระบบตรวจสอบแบตเตอรี่
-        async function updateBattery() {
-            try {
-                const b = await navigator.getBattery();
-                const update = () => {
-                    const level = Math.round(b.level * 100);
-                    const el = document.getElementById('bat-val');
-                    el.innerText = `BAT: ${level}%`;
-                    if(level < 20) el.classList.add('critical'); else el.classList.remove('critical');
-                };
-                b.addEventListener('levelchange', update);
-                update();
-            } catch(e) {}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const API_KEY = "AIzaSyDNG91SpfOI2qeHBnhveV1zOUjxEbRoakQ"; 
+    let map, zIdx = 100;
+
+    // --- Window Logic ---
+    function toggleWin(id) {
+        const win = document.getElementById(id);
+        win.style.display = win.style.display === 'none' ? 'flex' : 'none';
+        focusWin(win);
+    }
+
+    function focusWin(win) {
+        zIdx++;
+        win.style.zIndex = zIdx;
+    }
+
+    function dragWin(header) {
+        const win = header.parentElement;
+        focusWin(win);
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        
+        header.onmousedown = dragMouseDown;
+        header.ontouchstart = dragMouseDown;
+
+        function dragMouseDown(e) {
+            e = e || window.event;
+            const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+            pos3 = clientX;
+            pos4 = clientY;
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+            document.ontouchend = closeDragElement;
+            document.ontouchmove = elementDrag;
         }
 
-        // 🌐 ระบบตรวจสอบเน็ตเวิร์ก
-        function updateNetwork() {
-            const net = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-            if(net) {
-                document.getElementById('net-val').innerText = `NET: ${net.effectiveType.toUpperCase()}`;
-            }
+        function elementDrag(e) {
+            const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+            pos1 = pos3 - clientX;
+            pos2 = pos4 - clientY;
+            pos3 = clientX;
+            pos4 = clientY;
+            win.style.top = (win.offsetTop - pos2) + "px";
+            win.style.left = (win.offsetLeft - pos1) + "px";
         }
 
-        // 📐 ระบบ Gyroscope (เอียงเครื่อง)
-        window.addEventListener('deviceorientation', (e) => {
-            const tilt = Math.abs(e.beta) + Math.abs(e.gamma);
-            document.getElementById('tilt-val').innerText = tilt > 40 ? "GYRO: UNSTABLE" : "GYRO: STABLE";
-        });
-
-        function initMap(lat, lon) {
-            if (!map) {
-                map = L.map('map', { zoomControl: false, attributionControl: false }).setView([lat, lon], 15);
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-                marker = L.circleMarker([lat, lon], { color: '#00d2ff', radius: 10 }).addTo(map);
-            } else { map.setView([lat, lon]); marker.setLatLng([lat, lon]); }
+        function closeDragElement() {
+            document.onmouseup = null;
+            document.onmousemove = null;
+            document.ontouchend = null;
+            document.ontouchmove = null;
         }
+    }
 
-        async function sendCommand() {
-            haptic();
-            const input = document.getElementById('cmd');
-            const msg = input.value;
-            if(!msg) return;
+    // --- Core Features ---
+    function initMap(lat, lon) {
+        if (!map) {
+            map = L.map('map', { zoomControl: false, attributionControl: false }).setView([lat, lon], 15);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+        }
+    }
 
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-                const lat = pos.coords.latitude.toFixed(4);
-                const lon = pos.coords.longitude.toFixed(4);
-                initMap(lat, lon);
-
-                // ส่งคำสั่งไปที่ AI
-                const box = document.getElementById('chat-box');
-                box.innerHTML += `<div class="u-msg">>> ${msg}</div>`;
-                
-                try {
-                    const prompt = `คุณคือ JARVIS ในชุดเกราะ MARK-V20 ตอบท่านสมเดชสั้นๆ เท่ๆ: ${msg}`;
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                    });
-                    const data = await res.json();
-                    const reply = data.candidates[0].content.parts[0].text;
-                    
-                    box.innerHTML += `<div class="j-msg">JARVIS: ${reply}</div>`;
-                    const utter = new SpeechSynthesisUtterance(reply);
-                    utter.lang = 'th-TH'; window.speechSynthesis.speak(utter);
-                } catch(e) {
-                    box.innerHTML += `<div class="j-msg">JARVIS: ขออภัยครับ ระบบเชื่อมต่อสมองกลขัดข้อง</div>`;
-                }
-                
-                box.scrollTop = box.scrollHeight;
-                input.value = "";
+    async function sendCommand() {
+        const input = document.getElementById('cmd');
+        const msg = input.value;
+        if(!msg) return;
+        
+        const box = document.getElementById('chat-box');
+        box.innerHTML += `<div class="u-msg">>> ${msg}</div>`;
+        
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contents: [{ parts: [{ text: `คุณคือ JARVIS ตอบท่านสมเดชสั้นๆ: ${msg}` }] }] })
             });
-        }
+            const data = await res.json();
+            const reply = data.candidates[0].content.parts[0].text;
+            box.innerHTML += `<div class="j-msg">JARVIS: ${reply}</div>`;
+            const utter = new SpeechSynthesisUtterance(reply); utter.lang = 'th-TH'; window.speechSynthesis.speak(utter);
+        } catch(e) { box.innerHTML += `<div class="j-msg">ERROR: เชื่อมต่อ AI ไม่ได้</div>`; }
+        
+        box.scrollTop = box.scrollHeight;
+        input.value = "";
+    }
 
-        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-        window.onload = () => {
-            updateBattery();
-            updateNetwork();
-            navigator.geolocation.getCurrentPosition(p => initMap(p.coords.latitude, p.coords.longitude));
-        };
-    </script>
+    // Update Stats
+    setInterval(async () => {
+        try {
+            const b = await navigator.getBattery();
+            document.getElementById('bat').innerText = `BATTERY: ${Math.round(b.level*100)}%`;
+        } catch(e) {}
+    }, 5000);
+
+    window.onload = () => {
+        navigator.geolocation.getCurrentPosition(p => {
+            initMap(p.coords.latitude, p.coords.longitude);
+            document.getElementById('loc').innerText = `LOC: ${p.coords.latitude.toFixed(2)}, ${p.coords.longitude.toFixed(2)}`;
+        });
+    };
+</script>
 </body>
 </html>
