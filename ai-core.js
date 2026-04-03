@@ -1,35 +1,30 @@
-// [ MARK-V20 // AI-CORE: GEMINI-2.5-FLASH-WEB-STABLE ]
-const API_KEY = "AIzaSyCKBgkwZTM7xasWwIsivVTQ24MclNPgvUM"; 
+// [ MARK-V20 // WEB-CORE: GEMINI-2.5-STABLE ]
+const JARVIS_CONFIG = {
+    apiKey: "วาง API Key ของท่านที่นี่",
+    model: "gemini-2.5-flash",
+    personality: "45% Sarcastic, British Tone, Bilingual (TH/EN)"
+};
 
-async function askJarvis(userInput) {
-    // อัปเกรดเป็น Gemini 2.5 Flash เรียบร้อย
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+async function askJarvis(query) {
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${JARVIS_CONFIG.model}:generateContent?key=${JARVIS_CONFIG.apiKey}`;
     
     try {
-        const response = await fetch(url, {
+        const response = await fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 contents: [{
                     parts: [{
-                        text: `You are JARVIS, the ultra-advanced AI for Sir Somdet. Personality: 50% Sarcastic, high-tech British tone. Response: Mix Thai and English naturally. User Prompt: ${userInput}`
+                        text: `Role: JARVIS for Sir Somdet. Personality: ${JARVIS_CONFIG.personality}. Task: Respond to "${query}" and always provide web links for facts.`
                     }]
                 }]
             })
         });
 
         const data = await response.json();
-        
-        if (data.candidates && data.candidates[0].content) {
-            return data.candidates[0].content.parts[0].text;
-        } 
-        
-        if (data.error) {
-            return `Sir, Mainframe Error: ${data.error.message}`;
-        }
-
-        return "Systems are slightly unstable, Sir Somdet.";
-    } catch (error) {
-        return "Connection lost, Sir. Check your network.";
+        return data.candidates[0].content.parts[0].text;
+    } catch (err) {
+        return "Sir, the mainframe is unresponsive. Check the power core (API Key).";
     }
 }
+    
