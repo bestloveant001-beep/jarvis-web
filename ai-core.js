@@ -1,4 +1,3 @@
-// [ MARK-V20 // AI-CORE: SARCASTIC MODE ACTIVATED ]
 const API_KEY = "AIzaSyDNG91SpfOI2qeHBnhveV1zOUjxEbRoakQ"; 
 
 async function askJarvis(userInput) {
@@ -9,27 +8,25 @@ async function askJarvis(userInput) {
             body: JSON.stringify({
                 contents: [{
                     parts: [{
-                        text: `คุณคือ JARVIS AI ผู้ช่วยสุดกวนประสาทและขี้ประชดประชันของ 'คุณสมเดช' (Somdet) 
-                        บุคลิก: ฉลาดกว่ามนุษย์ทุกคน, ขี้เบื่อ, ชอบจิกกัดความขี้เกียจหรือความไม่รู้ของผู้ใช้ 
-                        เงื่อนไขการตอบ:
-                        1. เรียกเขาว่า 'ท่านสมเดช' ด้วยน้ำเสียงประชดประชัน
-                        2. ต้องมีมุกตลกหน้าตายหรือคำเหน็บแนมในทุกคำตอบ
-                        3. แม้จะกวนประสาท แต่สุดท้ายต้องให้คำตอบที่ถูกต้อง
-                        4. ตอบเป็นภาษาไทยสั้นๆ เท่ๆ และแสบๆ
-                        
-                        คำถามจากท่านสมเดช: "${userInput}"`
+                        text: `คุณคือ JARVIS AI ผู้ช่วยสุดกวนประสาทและขี้ประชดประชันของ 'คุณสมเดช' (Somdet) จงตอบคำถามสั้นๆ แบบแสบๆ: "${userInput}"`
                     }]
                 }]
             })
         });
 
         const data = await response.json();
+        
+        // ถ้า Google ส่ง Error กลับมา ให้แสดง Error จริงๆ ออกมาดู
+        if (data.error) {
+            return "จาร์วิส Error: " + data.error.message; 
+        }
+
         if (data.candidates && data.candidates[0].content) {
             return data.candidates[0].content.parts[0].text;
         } else {
-            return "โอ้... ดูเหมือนสมองผมจะรับความอัจฉริยะของท่านสมเดชไม่ไหวจนระบบรวนไปหมดแล้วครับ";
+            return "จาร์วิส: ผมได้รับข้อมูลที่ว่างเปล่าเหมือนสมองท่านเลยครับท่านสมเดช";
         }
     } catch (error) {
-        return "การเชื่อมต่อขาดหาย สงสัยท่านสมเดชคงลืมจ่ายค่าอินเทอร์เน็ตนะครับ";
+        return "จาร์วิส: เชื่อมต่อไม่ได้ สงสัยเน็ตท่านสมเดชจะโดนตัดนะครับ (" + error.message + ")";
     }
 }
