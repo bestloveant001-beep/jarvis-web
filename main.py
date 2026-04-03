@@ -1,4 +1,70 @@
-from flask import Flask, render_template_string, request, redirect, session
+const express = require('express');
+const bodyParser = require('body-parser');
+const fs = require('fs');
+const path = require('path');
+
+const app = express();
+const PORT = process.env.PORT || 8080;
+const DB_FILE = 'chat_history.json';
+
+app.use(bodyParser.json());
+app.use(express.static('public'));
+
+// --- 🤖 JARVIS LOGIC CORE (JavaScript Edition) ---
+function jarvisLogic(input, device = {}) {
+    const ui = input.toLowerCase();
+    const batt = device.battery || "Unknown";
+    const lat = device.lat || "0";
+    const time = device.time || "Unknown";
+
+    if (ui.includes("สวัสดี") || ui.includes("ตื่น")) {
+        return `สวัสดีครับท่านสมเดช ระบบ JARVIS-JS ออนไลน์ 100% พลังงานอุปกรณ์อยู่ที่ ${batt} พร้อมปฏิบัติการครับ`;
+    }
+    if (ui.includes("สถานะ") || ui.includes("พลังงาน")) {
+        return `รายงานสถานะ: พลังงานหลัก ${batt}, ระบบประมวลผล Node.js เสถียร, ขณะนี้เวลา ${time} ครับ`;
+    }
+    if (ui.includes("พิกัด") || ui.includes("ตำแหน่ง")) {
+        return lat !== "0" ? `ล็อคพิกัดดาวเทียม: ละติจูด ${lat} พื้นที่โดยรอบปลอดภัยครับท่าน` : "เซนเซอร์ GPS ขัดข้อง กรุณาตรวจสอบการอนุญาตสิทธิ์ครับ";
+    }
+    return `รับทราบครับท่านสมเดช คำสั่ง '${input}' ได้รับการยืนยัน ผมกำลังประมวลผลผ่าน JS-Core ครับ`;
+}
+
+// --- 📁 HISTORY MANAGEMENT ---
+function getHistory() {
+    if (!fs.existsSync(DB_FILE)) return [];
+    try { return JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); }
+    catch (e) { return []; }
+}
+
+function saveHistory(history) {
+    fs.writeFileSync(DB_FILE, JSON.stringify(history, null, 2), 'utf8');
+}
+
+// --- 📡 API ROUTES ---
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/api/history', (req, res) => {
+    res.json(getHistory());
+});
+
+app.post('/api/ask', (req, res) => {
+    const { message, device } = req.body;
+    let history = getHistory();
+    const reply = jarvisLogic(message, device);
+    
+    history.push({ u: message, j: reply });
+    if (history.length > 15) history.shift();
+    
+    saveHistory(history);
+    res.json({ reply });
+});
+
+app.listen(PORT, () => {
+    console.log(`[JARVIS] Core active on port ${PORT}`);
+});
+        from flask import Flask, render_template_string, request, redirect, session
 import os
 import google.generativeai as genai
 
