@@ -1,186 +1,92 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>[ MARK-V20 ] MULTI-WINDOW OS</title>
+    <title>[ MARK-V20 ] MULTI-WINDOW HUD</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        :root { --iron-cyan: #00d2ff; --iron-glow: rgba(0, 210, 255, 0.3); --bg: #000a12; }
-        body { background: var(--bg); color: var(--iron-cyan); font-family: 'Orbitron', sans-serif; margin: 0; height: 100vh; overflow: hidden; }
-
-        /* Desktop/HUD Wallpaper */
+        :root { --iron-cyan: #00d2ff; --iron-glow: rgba(0, 210, 255, 0.3); }
+        body { background: #000; color: var(--iron-cyan); font-family: 'Orbitron', sans-serif; margin: 0; height: 100vh; overflow: hidden; }
         .desktop { position: relative; width: 100%; height: 100%; background: radial-gradient(circle, #001a2d 0%, #000 100%); }
-        
-        /* Window Style */
-        .window { position: absolute; border: 1px solid var(--iron-cyan); background: rgba(0, 20, 35, 0.85); backdrop-filter: blur(5px); display: flex; flex-direction: column; min-width: 200px; box-shadow: 0 0 15px var(--iron-glow); z-index: 10; transition: opacity 0.3s; }
-        .window-header { background: var(--iron-cyan); color: #000; padding: 5px 10px; font-size: 0.6em; font-weight: bold; cursor: move; display: flex; justify-content: space-between; align-items: center; }
-        .window-content { padding: 10px; flex: 1; overflow: auto; }
-        .close-btn { cursor: pointer; background: #000; color: var(--iron-cyan); padding: 0 5px; border: 1px solid #000; }
-
-        /* Specific Window Sizes */
-        #win-map { top: 50px; left: 10px; width: 300px; height: 200px; }
-        #win-ai { top: 260px; left: 10px; width: 320px; height: 300px; }
-        #win-status { top: 50px; right: 10px; width: 180px; }
-
-        /* Map & AI internal */
-        #map { width: 100%; height: 100%; filter: hue-rotate(180deg) invert(0.9); }
-        .chat-log { height: 180px; overflow-y: auto; font-size: 0.75em; border-bottom: 1px solid var(--iron-glow); margin-bottom: 5px; }
-        .u-msg { color: #fff; opacity: 0.5; }
-        .j-msg { color: var(--iron-cyan); margin-bottom: 8px; }
-
-        /* Bottom Taskbar */
-        .taskbar { position: fixed; bottom: 0; width: 100%; background: rgba(0, 0, 0, 0.8); border-top: 1px solid var(--iron-cyan); display: flex; justify-content: center; gap: 15px; padding: 10px 0; z-index: 1000; }
-        .app-icon { border: 1px solid var(--iron-cyan); padding: 5px 15px; font-size: 0.7em; cursor: pointer; transition: 0.3s; }
-        .app-icon:active { background: var(--iron-cyan); color: #000; }
-
-        input { width: 100%; background: none; border: 1px solid var(--iron-glow); color: var(--iron-cyan); padding: 8px; font-family: 'Orbitron'; box-sizing: border-box; font-size: 14px; }
+        .window { position: absolute; border: 1px solid var(--iron-cyan); background: rgba(0, 20, 35, 0.9); backdrop-filter: blur(10px); display: flex; flex-direction: column; min-width: 280px; box-shadow: 0 0 15px var(--iron-glow); z-index: 10; }
+        .window-header { background: var(--iron-cyan); color: #000; padding: 6px 10px; font-size: 0.65em; font-weight: bold; cursor: move; display: flex; justify-content: space-between; }
+        .window-content { padding: 10px; flex: 1; }
+        #win-map { top: 10px; left: 10px; width: 300px; height: 220px; }
+        #win-ai { top: 240px; left: 10px; width: 320px; height: 280px; }
+        #map { width: 100%; height: 100%; filter: hue-rotate(180deg) brightness(0.8); }
+        .chat-box { height: 160px; overflow-y: auto; font-size: 0.8em; margin-bottom: 10px; border-bottom: 1px solid var(--iron-glow); }
+        .u-msg { color: #fff; opacity: 0.5; margin-bottom: 5px; }
+        .j-msg { color: var(--iron-cyan); margin-bottom: 10px; font-weight: bold; }
+        .taskbar { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); border-top: 1px solid var(--iron-cyan); display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; }
+        .btn { border: 1px solid var(--iron-cyan); padding: 5px 15px; font-size: 0.7em; cursor: pointer; }
+        input { width: 100%; background: none; border: 1px solid var(--iron-cyan); color: #fff; padding: 10px; font-family: 'Orbitron'; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-<div class="desktop" id="desktop">
-    <!-- Window: Map -->
+<div class="desktop">
     <div class="window" id="win-map">
-        <div class="window-header" onmousedown="dragWin(this)">
-            <span>SATELLITE_LINK</span>
-            <span class="close-btn" onclick="toggleWin('win-map')">X</span>
-        </div>
+        <div class="window-header" onmousedown="dragWin(this)"><span>SATELLITE_LINK</span><span onclick="toggle('win-map')">X</span></div>
         <div class="window-content" style="padding:0;"><div id="map"></div></div>
     </div>
 
-    <!-- Window: AI Jarvis -->
     <div class="window" id="win-ai">
-        <div class="window-header" onmousedown="dragWin(this)">
-            <span>JARVIS_CORE</span>
-            <span class="close-btn" onclick="toggleWin('win-ai')">X</span>
-        </div>
+        <div class="window-header" onmousedown="dragWin(this)"><span>JARVIS_CORE</span><span onclick="toggle('win-ai')">X</span></div>
         <div class="window-content">
-            <div id="chat-box" class="chat-log"></div>
-            <input type="text" id="cmd" placeholder="COMMAND..." onkeypress="if(event.key==='Enter') sendCommand()">
-        </div>
-    </div>
-
-    <!-- Window: Status -->
-    <div class="window" id="win-status">
-        <div class="window-header" onmousedown="dragWin(this)">
-            <span>SYSTEM_STATS</span>
-            <span class="close-btn" onclick="toggleWin('win-status')">X</span>
-        </div>
-        <div class="window-content" style="font-size: 0.6em;">
-            <div id="bat">BATTERY: --%</div>
-            <div id="net">NET: ONLINE</div>
-            <div id="loc">LOC: SCANNING...</div>
+            <div id="chat-box" class="chat-box"></div>
+            <input type="text" id="cmd" placeholder="ACCESS MAIN_CORE..." onkeypress="if(event.key==='Enter') sendCommand()">
         </div>
     </div>
 </div>
 
 <div class="taskbar">
-    <div class="app-icon" onclick="toggleWin('win-map')">MAP</div>
-    <div class="app-icon" onclick="toggleWin('win-ai')">AI</div>
-    <div class="app-icon" onclick="toggleWin('win-status')">STATS</div>
+    <div class="btn" onclick="toggle('win-map')">MAP</div>
+    <div class="btn" onclick="toggle('win-ai')">AI_CORE</div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- 🟢 เชื่อมต่อไฟล์สมองกลแยกส่วน -->
+<script src="ai-core.js"></script>
+
 <script>
-    const API_KEY = "AIzaSyDNG91SpfOI2qeHBnhveV1zOUjxEbRoakQ"; 
-    let map, zIdx = 100;
-
-    // --- Window Logic ---
-    function toggleWin(id) {
-        const win = document.getElementById(id);
-        win.style.display = win.style.display === 'none' ? 'flex' : 'none';
-        focusWin(win);
-    }
-
-    function focusWin(win) {
-        zIdx++;
-        win.style.zIndex = zIdx;
-    }
-
-    function dragWin(header) {
-        const win = header.parentElement;
-        focusWin(win);
-        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-        
-        header.onmousedown = dragMouseDown;
-        header.ontouchstart = dragMouseDown;
-
-        function dragMouseDown(e) {
-            e = e || window.event;
-            const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
-            const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
-            pos3 = clientX;
-            pos4 = clientY;
-            document.onmouseup = closeDragElement;
-            document.onmousemove = elementDrag;
-            document.ontouchend = closeDragElement;
-            document.ontouchmove = elementDrag;
-        }
-
-        function elementDrag(e) {
-            const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-            const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
-            pos1 = pos3 - clientX;
-            pos2 = pos4 - clientY;
-            pos3 = clientX;
-            pos4 = clientY;
-            win.style.top = (win.offsetTop - pos2) + "px";
-            win.style.left = (win.offsetLeft - pos1) + "px";
-        }
-
-        function closeDragElement() {
-            document.onmouseup = null;
-            document.onmousemove = null;
-            document.ontouchend = null;
-            document.ontouchmove = null;
-        }
-    }
-
-    // --- Core Features ---
-    function initMap(lat, lon) {
-        if (!map) {
-            map = L.map('map', { zoomControl: false, attributionControl: false }).setView([lat, lon], 15);
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-        }
+    let map;
+    function toggle(id) { 
+        const el = document.getElementById(id); 
+        el.style.display = el.style.display === 'none' ? 'flex' : 'none'; 
     }
 
     async function sendCommand() {
         const input = document.getElementById('cmd');
+        const box = document.getElementById('chat-box');
         const msg = input.value;
         if(!msg) return;
-        
-        const box = document.getElementById('chat-box');
+
         box.innerHTML += `<div class="u-msg">>> ${msg}</div>`;
-        
-        try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: `คุณคือ JARVIS ตอบท่านสมเดชสั้นๆ: ${msg}` }] }] })
-            });
-            const data = await res.json();
-            const reply = data.candidates[0].content.parts[0].text;
-            box.innerHTML += `<div class="j-msg">JARVIS: ${reply}</div>`;
-            const utter = new SpeechSynthesisUtterance(reply); utter.lang = 'th-TH'; window.speechSynthesis.speak(utter);
-        } catch(e) { box.innerHTML += `<div class="j-msg">ERROR: เชื่อมต่อ AI ไม่ได้</div>`; }
-        
-        box.scrollTop = box.scrollHeight;
         input.value = "";
+        box.scrollTop = box.scrollHeight;
+
+        // 🧠 เรียกใช้ฟังก์ชันจากไฟล์ ai-core.js
+        const reply = await askJarvis(msg);
+        
+        box.innerHTML += `<div class="j-msg">JARVIS: ${reply}</div>`;
+        box.scrollTop = box.scrollHeight;
+        jarvisSpeak(reply);
     }
 
-    // Update Stats
-    setInterval(async () => {
-        try {
-            const b = await navigator.getBattery();
-            document.getElementById('bat').innerText = `BATTERY: ${Math.round(b.level*100)}%`;
-        } catch(e) {}
-    }, 5000);
+    function dragWin(header) {
+        let win = header.parentElement;
+        header.onmousedown = (e) => {
+            let x = e.clientX - win.offsetLeft, y = e.clientY - win.offsetTop;
+            document.onmousemove = (e) => { win.style.left = (e.clientX-x)+'px'; win.style.top = (e.clientY-y)+'px'; };
+            document.onmouseup = () => document.onmousemove = null;
+        };
+    }
 
     window.onload = () => {
         navigator.geolocation.getCurrentPosition(p => {
-            initMap(p.coords.latitude, p.coords.longitude);
-            document.getElementById('loc').innerText = `LOC: ${p.coords.latitude.toFixed(2)}, ${p.coords.longitude.toFixed(2)}`;
+            map = L.map('map', {zoomControl:false}).setView([p.coords.latitude, p.coords.longitude], 15);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
         });
     };
 </script>
