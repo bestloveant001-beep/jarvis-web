@@ -3,145 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARVIS MARK-V20 | SIR SOMDET COMMAND CENTER</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Kanit:wght@300;500&display=swap" rel="stylesheet">
+    <title>JARVIS MARK-V20 | SIR SOMDET</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Kanit:wght@300;400&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-glow: #00d4ff;
-            --bg-dark: #0a0b0e;
-            --card-bg: rgba(20, 22, 28, 0.9);
-            --accent-red: #ff4b2b;
-        }
+        :root { --neon: #00d4ff; --bg: #050608; --panel: rgba(20, 25, 30, 0.8); }
+        body { background: var(--bg); color: #fff; font-family: 'Kanit', sans-serif; margin: 0; overflow-x: hidden; }
+        .grid-bg { position: fixed; width: 100%; height: 100%; background: radial-gradient(circle, #1a1c23 1px, transparent 1px) 0 0/30px 30px; z-index: -1; opacity: 0.2; }
+        
+        header { padding: 20px; border-bottom: 1px solid var(--neon); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); box-shadow: 0 0 15px rgba(0,212,255,0.3); }
+        .logo { font-family: 'Orbitron'; color: var(--neon); letter-spacing: 3px; font-weight: bold; }
 
-        body {
-            background-color: var(--bg-dark);
-            color: #e0e0e0;
-            font-family: 'Kanit', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-image: radial-gradient(circle at center, #1a1c23 0%, #0a0b0e 100%);
-        }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; padding: 20px; }
+        .card { background: var(--panel); border: 1px solid #333; padding: 15px; border-radius: 5px; border-left: 4px solid var(--neon); position: relative; overflow: hidden; }
+        .card h2 { font-family: 'Orbitron'; font-size: 0.9rem; color: var(--neon); margin-bottom: 10px; }
+        .data { font-size: 1.2rem; font-weight: bold; }
 
-        .header {
-            text-align: center;
-            border-bottom: 2px solid var(--primary-glow);
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 20px -10px var(--primary-glow);
-        }
+        /* Neural Chat Section */
+        .chat-box { margin: 20px; background: var(--panel); border: 1px solid var(--neon); height: 300px; display: flex; flex-direction: column; border-radius: 10px; }
+        #chat-logs { flex: 1; overflow-y: auto; padding: 15px; font-size: 0.9rem; border-bottom: 1px solid #333; }
+        .input-area { display: flex; padding: 10px; gap: 10px; }
+        input { flex: 1; background: #111; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 5px; outline: none; }
+        button { background: var(--neon); border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); }
 
-        h1 {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--primary-glow);
-            letter-spacing: 5px;
-            margin: 0;
-            text-transform: uppercase;
-        }
-
-        .status-bar {
-            font-size: 12px;
-            color: #888;
-            margin-top: 10px;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            border-radius: 10px;
-            padding: 20px;
-            transition: 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card:hover {
-            border-color: var(--primary-glow);
-            transform: translateY(-5px);
-            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
-        }
-
-        .card h2 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 18px;
-            color: var(--primary-glow);
-            border-left: 4px solid var(--primary-glow);
-            padding-left: 10px;
-            margin-top: 0;
-        }
-
-        .card.disaster { border-color: var(--accent-red); }
-        .card.disaster h2 { color: var(--accent-red); border-left-color: var(--accent-red); }
-
-        .news-item {
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #222;
-            padding-bottom: 10px;
-        }
-
-        .source-link {
-            color: #00d4ff;
-            text-decoration: none;
-            font-size: 11px;
-            opacity: 0.7;
-        }
-
-        .source-link:hover { opacity: 1; text-decoration: underline; }
-
-        .jarvis-input {
-            width: 100%;
-            padding: 15px;
-            background: #111;
-            border: 1px solid var(--primary-glow);
-            color: white;
-            border-radius: 5px;
-            font-family: 'Kanit', sans-serif;
-            margin-top: 30px;
-        }
-
-        .btn-scan {
-            background: var(--primary-glow);
-            color: black;
-            border: none;
-            padding: 10px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            width: 100%;
-            font-family: 'Orbitron', sans-serif;
-        }
+        .pulse { animation: pulse-red 2s infinite; color: #ff4b2b; }
+        @keyframes pulse-red { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
 </head>
 <body>
+    <div class="grid-bg"></div>
+    <header>
+        <div class="logo">JARVIS // MARK-V20</div>
+        <div style="font-size: 0.7rem;">PILOT: <span style="color:var(--neon)">SIR SOMDET</span> | STATUS: <span style="color:#0f0">ONLINE</span></div>
+    </header>
 
-<div class="header">
-    <h1>JARVIS MARK-V20</h1>
-    <div class="status-bar">SYSTEM STATUS: OPTIMAL | LOCATION: THAILAND SECTOR | AUTH: SIR SOMDET</div>
-</div>
+    <div class="dashboard">
+        <div class="card">
+            <h2>🛰️ WEATHER SATELLITE</h2>
+            <div id="weather" class="data">กำลังสแกนพิกัด...</div>
+            <p style="font-size: 0.7rem; color: #888;">Location: Thailand Sector</p>
+        </div>
+        <div class="card">
+            <h2>💰 GOLD MARKET</h2>
+            <div id="gold" class="data">บาทละ 44,550.-</div>
+            <p id="gold-status" class="pulse">STATUS: TRADING ACTIVE</p>
+        </div>
+        <div class="card">
+            <h2>🛡️ SYSTEM CORE</h2>
+            <div class="data">CPU: 45% | MEM: 1.2GB</div>
+            <p style="font-size: 0.7rem; color: #888;">Firewall: Active</p>
+        </div>
+    </div>
 
-<div class="grid-container">
-    <!-- ข่าว 6 หมวด + 2 ระบบพิเศษ -->
-    <div class="card"><h2>🚩 ข่าวด่วน</h2><div id="breaking">กำลังเชื่อมต่อดาวเทียม...</div></div>
-    <div class="card"><h2>⚖️ การเมือง</h2><div id="politics">...</div></div>
-    <div class="card"><h2>💰 เศรษฐกิจ</h2><div id="economy">...</div></div>
-    <div class="card"><h2>📈 ตลาดหุ้น</h2><div id="stocks">...</div></div>
-    <div class="card"><h2>⚽ กีฬา</h2><div id="sports">...</div></div>
-    <div class="card"><h2>➕ ข่าวเสริม</h2><div id="additional">...</div></div>
-    <div class="card"><h2>🛰️ ระบบดาวเทียม</h2><div id="satellite">...</div></div>
-    <div class="card disaster"><h2>🚨 ภัยพิบัติ</h2><div id="disaster">สแกนพิกัดรอยเลื่อน...</div></div>
-</div>
+    <div class="chat-box">
+        <div id="chat-logs">
+            <div style="color:var(--neon)">[JARVIS]: ระบบประสาทเทียมออนไลน์แล้วครับท่านสมเดช มีคำสั่งอะไรไหมครับ?</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="พิมพ์คำสั่ง... (เช่น สรุปสถานะ)">
+            <button onclick="sendMessage()">SEND</button>
+        </div>
+    </div>
 
-<input type="text" class="jarvis_input" placeholder="สั่งการจาร์วิส... (เช่น สรุปข่าวทองคำ)">
-<button class="btn-scan">INITIATE GLOBAL SCAN</button>
+    <script>
+        // ระบบจำลองดึงข้อมูลสภาพอากาศ
+        setTimeout(() => {
+            document.getElementById('weather').innerText = "34°C | ฟ้าโปร่ง";
+        }, 2000);
 
+        // ระบบแชทโต้ตอบ
+        function sendMessage() {
+            const input = document.getElementById('user-input');
+            const logs = document.getElementById('chat-logs');
+            if(!input.value) return;
+
+            logs.innerHTML += `<div style="text-align:right; margin-bottom:10px;">[YOU]: ${input.value}</div>`;
+            
+            const msg = input.value.toLowerCase();
+            input.value = '';
+
+            setTimeout(() => {
+                let reply = "ขออภัยครับท่าน ข้อมูลส่วนนี้อยู่นอกเหนือการเข้าถึง";
+                if(msg.includes('ข่าว')) reply = "📢 ตลาดวันนี้คึกคัก ราคาทองคำทรงตัวที่ระดับสูงครับ";
+                if(msg.includes('จาร์วิส')) reply = "ครับท่านสมเดช ข้าน้อยพร้อมรับใช้ตลอด 24 ชั่วโมงครับ";
+                if(msg.includes('ระบบ')) reply = "สถานะระบบปัจจุบัน OPTIMAL ทุกส่วนงานปกติครับ";
+                
+                logs.innerHTML += `<div style="color:var(--neon); margin-bottom:10px;">[JARVIS]: ${reply}</div>`;
+                logs.scrollTop = logs.scrollHeight;
+            }, 800);
+        }
+    </script>
 </body>
 </html>
