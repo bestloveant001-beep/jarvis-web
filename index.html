@@ -3,91 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARVIS MK-V20 | DUAL-CORE</title>
+    <title>JARVIS MK-V20 | REAL-BRAIN AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Kanit:wght@300;400&display=swap" rel="stylesheet">
     <style>
         :root { --neon: #00d4ff; --dola: #a020f0; --bg: #050608; --panel: rgba(20, 25, 30, 0.95); --red: #ff4b2b; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'Kanit', sans-serif; overflow-x: hidden; }
         .grid-bg { position: fixed; width: 100%; height: 100%; background: radial-gradient(circle, #1a1c23 1px, transparent 1px) 0 0/30px 30px; z-index: -1; opacity: 0.2; }
         #loading-screen { position: fixed; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .loader { width: 80px; height: 80px; border: 3px solid transparent; border-top: 3px solid var(--neon); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
         #login-screen { position: fixed; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 8888; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .login-box { background: var(--panel); border: 1px solid var(--neon); padding: 30px; border-radius: 15px; text-align: center; width: 80%; max-width: 320px; }
         #main-ui { display: none; }
         header { padding: 15px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); }
         .news-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
         .card { background: var(--panel); border: 1px solid #333; padding: 12px; border-radius: 8px; border-left: 4px solid var(--neon); cursor: pointer; }
-        .status-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px 15px; font-size: 0.75rem; }
-        .chat-container { margin: 0 15px 20px; background: var(--panel); border: 1px solid var(--neon); border-radius: 12px; height: 300px; display: flex; flex-direction: column; }
+        .chat-container { margin: 0 15px 20px; background: var(--panel); border: 1px solid var(--neon); border-radius: 12px; height: 350px; display: flex; flex-direction: column; }
         #chat-logs { flex: 1; overflow-y: auto; padding: 15px; font-size: 0.85rem; }
         .input-group { display: flex; padding: 10px; background: #000; gap: 8px; border-radius: 0 0 12px 12px; }
         input { flex: 1; background: #111; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 5px; outline: none; }
-        .msg-jarvis { color: var(--neon); margin-bottom: 12px; }
+        .msg-gemini { color: var(--neon); margin-bottom: 12px; border-left: 2px solid var(--neon); padding-left: 10px; }
         .msg-dola { color: var(--dola); border-left: 2px solid var(--dola); padding-left: 10px; font-style: italic; font-size: 0.75rem; margin-bottom: 20px; }
+        .loader { width: 50px; height: 50px; border: 3px solid transparent; border-top: 3px solid var(--neon); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
     <div class="grid-bg"></div>
-    <div id="loading-screen"><div class="loader"></div><h3 style="font-family:'Orbitron'; color:var(--neon); margin-top:20px;">SYNCING AI CORE...</h3></div>
-    <div id="login-screen"><div class="login-box"><h2 style="font-family:'Orbitron'; color:var(--neon);">AUTHENTICATION</h2><input type="password" id="pass" placeholder="PASSKEY (1234)" style="width:90%; padding:10px; margin:15px 0; background:#000; color:var(--neon); border:1px solid #444; text-align:center;"><button onclick="login()" style="width:100%; background:var(--neon); border:none; padding:12px; font-weight:bold; cursor:pointer;">ACCESS</button></div></div>
+    <div id="loading-screen"><div class="loader"></div><h3 style="font-family:'Orbitron'; color:var(--neon); margin-top:20px;">SYNCING REAL BRAIN...</h3></div>
+    <div id="login-screen"><div class="login-box" style="background:var(--panel); border:1px solid var(--neon); padding:30px; border-radius:15px; text-align:center;"><h2 style="font-family:'Orbitron'; color:var(--neon);">AUTHENTICATION</h2><input type="password" id="pass" placeholder="1234" style="width:90%; padding:10px; margin:15px 0; background:#000; color:var(--neon); border:1px solid #444; text-align:center;"><button onclick="login()" style="width:100%; background:var(--neon); border:none; padding:12px; font-weight:bold; cursor:pointer;">ACCESS</button></div></div>
+    
     <div id="main-ui">
-        <header><div style="font-family:'Orbitron'; color:var(--neon); font-weight:bold;">จาร์วิส เอ็มเค-วี20</div><div style="font-size:0.65rem; text-align:right;">ภูมิภาค: ประเทศไทย<br>นักบิน: <span style="color:var(--neon)">สมเดช</span></div></header>
+        <header><div style="font-family:'Orbitron'; color:var(--neon); font-weight:bold;">จาร์วิส เอ็มเค-วี20</div><div style="font-size:0.65rem; text-align:right;">ID: <span style="color:var(--neon)">สมเดช</span> | <span style="color:#0f0;">ONLINE</span></div></header>
         <div class="news-grid">
-            <div class="card" onclick="runAI('ข่าวการเมือง')"><h4>การเมือง</h4><div>ข่าวการเมือง</div></div>
-            <div class="card" onclick="runAI('ข่าวเศรษฐกิจ')"><h4>เศรษฐกิจ</h4><div>ข่าวเศรษฐกิจ</div></div>
-            <div class="card" onclick="runAI('ข่าวกีฬา')"><h4>กีฬา</h4><div>ข่าวกีฬา</div></div>
-            <div class="card" onclick="runAI('ข่าวตลาดหุ้น')"><h4>หุ้น</h4><div>ข่าวตลาดหุ้น</div></div>
-            <div class="card" onclick="runAI('ข่าวด่วน')" style="border-left-color:var(--red);"><h4>ข่าวล่าสุด</h4><div style="color:var(--red);">ข่าวด่วน</div></div>
-            <div class="card" onclick="runAI('ข่าวเสริม')"><h4>พิเศษ</h4><div>ข่าวเสริม</div></div>
-        </div>
-        <div class="status-row">
-            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">🛰️ SATELLITE: <span id="sat" style="color:var(--neon)">LIVE: กรุงเทพฯ</span></div>
-            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">⚠️ ภัยพิบัติ: <span style="color:var(--red)">สถานะปกติ</span></div>
+            <div class="card" onclick="runAI('สรุปสถานการณ์การเมืองไทยวันนี้')"><h4>การเมือง</h4><div>การเมือง</div></div>
+            <div class="card" onclick="runAI('วิเคราะห์เศรษฐกิจไทยล่าสุด')"><h4>เศรษฐกิจ</h4><div>เศรษฐกิจ</div></div>
+            <div class="card" onclick="runAI('ข่าวด่วนล่าสุดในประเทศไทย')"><h4>ด่วน</h4><div style="color:var(--red);">ข่าวล่าสุด</div></div>
+            <div class="card" onclick="runAI('พยากรณ์อากาศไทยวันนี้')"><h4>สภาพอากาศ</h4><div>อากาศ</div></div>
         </div>
         <div class="chat-container">
             <div id="chat-logs"></div>
             <div class="input-group">
-                <input type="text" id="user-input" placeholder="พิมพ์คำสั่ง..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <input type="text" id="user-input" placeholder="คุยกับสมองกลจริง..." onkeypress="if(event.key==='Enter') sendMessage()">
                 <button onclick="sendMessage()" style="background:var(--neon); border:none; padding:0 15px; cursor:pointer; font-weight:bold;">ส่ง</button>
             </div>
         </div>
     </div>
 
-    <!-- 🔗 ส่วนสำคัญ: เชื่อมต่อสมอง AI -->
     <script src="ai-core.js"></script>
     <script>
         window.onload = () => { setTimeout(() => { document.getElementById('loading-screen').style.display='none'; document.getElementById('login-screen').style.display='flex'; }, 2000); };
-        function login() { if(document.getElementById('pass').value === "1234") { document.getElementById('login-screen').style.display='none'; document.getElementById('main-ui').style.display='block'; speak("ยินดีต้อนรับครับท่านสมเดช สมองกลสองซีกพร้อมทำงาน"); } else { alert("ACCESS DENIED"); } }
+        function login() { if(document.getElementById('pass').value === "1234") { document.getElementById('login-screen').style.display='none'; document.getElementById('main-ui').style.display='block'; speak("สมองกลจริงเชื่อมต่อแล้วครับท่านสมเดช"); } else { alert("ACCESS DENIED"); } }
         function runAI(t) { document.getElementById('user-input').value = t; sendMessage(); }
         
         async function sendMessage() {
             const input = document.getElementById('user-input');
             const logs = document.getElementById('chat-logs');
-            if(!input.value || !window.AI_CORE) return;
+            if(!input.value) return;
             const val = input.value;
-            logs.innerHTML += `<div style="text-align:right; margin-bottom:15px; color:#888;">[PILOT]: ${val}</div>`;
+            logs.innerHTML += `<div style="text-align:right; margin-bottom:15px; color:#888; font-size:0.8rem;">[PILOT]: ${val}</div>`;
             input.value = '';
 
             const gemId = "g-" + Date.now();
-            logs.innerHTML += `<div id="${gemId}" class="msg-jarvis">[GEMINI-3]: กำลังวิเคราะห์...</div>`;
-            
-            // 🧠 ดึงข้อมูลจากสมองใน ai-core.js
+            logs.innerHTML += `<div id="${gemId}" class="msg-gemini">[GEMINI-3]: กำลังประมวลผลด้วย AI จริง...</div>`;
+            logs.scrollTop = logs.scrollHeight;
+
+            // 🧠 คุยกับ API จริงใน ai-core.js
             const gemReply = await AI_CORE.processGemini(val);
             const dolaReply = AI_CORE.getDolaInsight();
 
+            document.getElementById(gemId).innerText = `[GEMINI-3]: ${gemReply}`;
             setTimeout(() => {
-                document.getElementById(gemId).innerText = `[GEMINI-3]: ${gemReply}`;
-                setTimeout(() => {
-                    logs.innerHTML += `<div class="msg-dola">[DOLA]: ${dolaReply}</div>`;
-                    logs.scrollTop = logs.scrollHeight;
-                    speak(gemReply + " " + dolaReply);
-                }, 800);
-            }, 1200);
+                logs.innerHTML += `<div class="msg-dola">[DOLA]: ${dolaReply}</div>`;
+                logs.scrollTop = logs.scrollHeight;
+                speak(gemReply);
+            }, 500);
         }
 
         function speak(t) { const m = new SpeechSynthesisUtterance(t); m.lang = 'th-TH'; window.speechSynthesis.speak(m); }
-        setInterval(() => { const l = ["เชียงใหม่", "กรุงเทพฯ", "ภูเก็ต"]; document.getElementById('sat').innerText = `LIVE: ${l[Math.floor(Math.random()*3)]}`; }, 5000);
     </script>
 </body>
 </html>
