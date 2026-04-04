@@ -1,69 +1,145 @@
-<script>
-    // 🧠 คลังข้อมูลข่าวกรองสำหรับแต่ละหมวด (จำลองการดึงจาก Server จริง)
-    const intelDB = {
-        'ข่าวการเมือง': '🚨 [การเมือง] สภาฯ เตรียมพิจารณาร่างกฎหมายใหม่เพื่อกระตุ้นเศรษฐกิจดิจิทัลในเขตประเทศไทยครับ',
-        'ข่าวเศรษฐกิจ': '💰 [เศรษฐกิจ] ค่าเงินบาทแข็งค่าขึ้นเล็กน้อย ส่งผลดีต่อผู้นำเข้าสินค้าไอทีในสัปดาห์นี้ครับ',
-        'ข่าวกีฬา': '⚽ [กีฬา] ทีมชาติไทยเตรียมลงสนามนัดอุ่นเครื่อง ผลงานล่าสุดถือว่าอยู่ในเกณฑ์ยอดเยี่ยมครับ',
-        'ข่าวตลาดหุ้น': '📈 [หุ้น] SET Index ปิดบวกเล็กน้อย กลุ่มพลังงานและธนาคารยังคงเป็นผู้นำตลาดครับ',
-        'ข่าวด่วน': '🔥 [ด่วน] กรมอุตุฯ แจ้งเตือนพายุฤดูร้อนในหลายพื้นที่ของภาคเหนือและกลาง เฝ้าระวังกลุ่มฝนครับ',
-        'ข่าวเสริม': '➕ [พิเศษ] นวัตกรรม AI ใหม่เริ่มถูกนำมาใช้ในภาคเกษตรกรรมของไทย เพื่อเพิ่มผลผลิตครับ'
-    };
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS MK-V20 | DUAL-CORE RECOVERY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Kanit:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon: #00d4ff; --dola: #a020f0; --bg: #050608; --panel: rgba(20, 25, 30, 0.95); --red: #ff4b2b; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'Kanit', sans-serif; overflow-x: hidden; }
+        .grid-bg { position: fixed; width: 100%; height: 100%; background: radial-gradient(circle, #1a1c23 1px, transparent 1px) 0 0/30px 30px; z-index: -1; opacity: 0.2; }
 
-    window.onload = () => {
-        setTimeout(() => {
-            document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('login-screen').style.display = 'flex';
-        }, 2000);
-    };
+        /* Screens */
+        #loading-screen { position: fixed; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .loader { width: 80px; height: 80px; border: 3px solid transparent; border-top: 3px solid var(--neon); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-    function login() {
-        if(document.getElementById('pass').value === "1234") {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-ui').style.display = 'block';
-            speak("ระบบออนไลน์แล้วครับท่านสมเดช");
-        } else { alert("ACCESS DENIED"); }
-    }
+        #login-screen { position: fixed; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 8888; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .login-box { background: var(--panel); border: 1px solid var(--neon); padding: 30px; border-radius: 15px; text-align: center; width: 80%; max-width: 320px; }
 
-    function runAI(topic) {
-        document.getElementById('user-input').value = topic;
-        sendMessage();
-    }
+        /* Main UI */
+        #main-ui { display: none; }
+        header { padding: 15px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); }
+        .logo { font-family: 'Orbitron'; color: var(--neon); font-weight: bold; }
 
-    async function sendMessage() {
-        const input = document.getElementById('user-input');
-        const logs = document.getElementById('chat-logs');
-        if(!input.value) return;
+        .news-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
+        .card { background: var(--panel); border: 1px solid #333; padding: 12px; border-radius: 8px; border-left: 4px solid var(--neon); cursor: pointer; }
+        .card h4 { margin: 0; font-size: 0.7rem; color: #888; }
+        .card div { font-weight: bold; margin-top: 5px; font-size: 0.9rem; }
 
-        const val = input.value;
-        logs.innerHTML += `<div style="text-align:right; margin-bottom:15px; font-size:0.8rem; color:#888;">[PILOT]: ${val}</div>`;
-        input.value = '';
-        logs.scrollTop = logs.scrollHeight;
+        .status-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px 15px; }
+        .status-box { background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 10px; border-radius: 8px; font-size: 0.75rem; }
 
-        const gemId = "g-" + Date.now();
-        logs.innerHTML += `<div id="${gemId}" class="msg-jarvis">[GEMINI-3]: กำลังวิเคราะห์ข้อมูล...</div>`;
+        .chat-container { margin: 0 15px 20px; background: var(--panel); border: 1px solid var(--neon); border-radius: 12px; height: 300px; display: flex; flex-direction: column; }
+        #chat-logs { flex: 1; overflow-y: auto; padding: 15px; font-size: 0.85rem; }
+        .input-group { display: flex; padding: 10px; background: #000; gap: 8px; border-radius: 0 0 12px 12px; }
+        input { flex: 1; background: #111; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 5px; outline: none; }
 
-        setTimeout(() => {
-            // 📡 ดึงข้อมูลที่ตรงกับหมวดหมู่
-            let gemReply = intelDB[val] || "ข้าน้อยกำลังรวบรวมข้อมูลเชิงลึกเกี่ยวกับ '" + val + "' ให้ท่านสมเดชครับ";
-            document.getElementById(gemId).innerText = `[GEMINI-3]: ${gemReply}`;
+        .msg-jarvis { color: var(--neon); margin-bottom: 12px; }
+        .msg-dola { color: var(--dola); border-left: 2px solid var(--dola); padding-left: 10px; font-style: italic; font-size: 0.75rem; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+
+    <div id="loading-screen">
+        <div class="loader"></div>
+        <h3 style="font-family:'Orbitron'; color:var(--neon); margin-top:20px;">RESTORING SYSTEM...</h3>
+    </div>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h2 style="font-family:'Orbitron'; color:var(--neon);">AUTHENTICATION</h2>
+            <input type="password" id="pass" placeholder="PASSKEY (1234)" style="width:90%; padding:10px; margin:15px 0; background:#000; color:var(--neon); border:1px solid #444; text-align:center;">
+            <button onclick="login()" style="width:100%; background:var(--neon); border:none; padding:12px; font-weight:bold; cursor:pointer;">ACCESS SYSTEM</button>
+        </div>
+    </div>
+
+    <div id="main-ui">
+        <header>
+            <div class="logo">จาร์วิส เอ็มเค-วี20</div>
+            <div style="font-size:0.65rem; text-align:right;">ภูมิภาค: ประเทศไทย<br>นักบิน: <span style="color:var(--neon)">สมเดช</span></div>
+        </header>
+        <div class="news-grid">
+            <div class="card" onclick="runAI('ข่าวการเมือง')"><h4>การเมือง</h4><div>ข่าวการเมือง</div></div>
+            <div class="card" onclick="runAI('ข่าวเศรษฐกิจ')"><h4>เศรษฐกิจ</h4><div>ข่าวเศรษฐกิจ</div></div>
+            <div class="card" onclick="runAI('ข่าวกีฬา')"><h4>กีฬา</h4><div>ข่าวกีฬา</div></div>
+            <div class="card" onclick="runAI('ข่าวตลาดหุ้น')"><h4>หุ้น</h4><div>ข่าวตลาดหุ้น</div></div>
+            <div class="card" onclick="runAI('ข่าวด่วน')" style="border-left-color:var(--red);"><h4>ข่าวล่าสุด</h4><div style="color:var(--red);">ข่าวด่วน</div></div>
+            <div class="card" onclick="runAI('ข่าวเสริม')"><h4>พิเศษ</h4><div>ข่าวเสริม</div></div>
+        </div>
+        <div class="status-row">
+            <div class="status-box">🛰️ SATELLITE SYSTEM:<br><span id="sat" style="color:var(--neon)">LIVE: กรุงเทพฯ SECTOR CLEAR</span></div>
+            <div class="status-box">⚠️ ภัยพิบัติ:<br><span style="color:var(--red)">สถานะปกติ</span></div>
+        </div>
+        <div class="chat-container">
+            <div id="chat-logs"></div>
+            <div class="input-group">
+                <input type="text" id="user-input" placeholder="พิมพ์คำสั่ง..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" style="background:var(--neon); border:none; padding:0 15px; cursor:pointer; font-weight:bold;">ส่ง</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const intelDB = {
+            'ข่าวการเมือง': '🚨 สภาฯ เตรียมอภิปรายร่างงบประมาณปี 68 เพื่อพัฒนาโครงสร้างพื้นฐานดิจิทัลครับ',
+            'ข่าวเศรษฐกิจ': '💰 ค่าเงินบาทแข็งค่าที่ 36.40 บาท ตลาดส่งออกไทยเริ่มมีสัญญาณฟื้นตัวครับ',
+            'ข่าวกีฬา': '⚽ ทีมชาติไทยเตรียมลงสนามในศึกคัดบอลโลก บรรยากาศในแคมป์ฝึกซ้อมคึกคักมากครับ',
+            'ข่าวตลาดหุ้น': '📈 SET Index ขยับขึ้นตามตลาดภูมิภาค กลุ่มอิเล็กทรอนิกส์ยังคงเป็นตัวชูโรงครับ',
+            'ข่าวด่วน': '🔥 แจ้งเตือน: พบกลุ่มฝนกำลังเคลื่อนตัวเข้าสู่กทม.และปริมณฑล เตรียมรับมือฝนตกหนักครับ',
+            'ข่าวเสริม': '➕ สตาร์ทอัพไทยเปิดตัวเทคโนโลยี AI ช่วยวิเคราะห์พืชผลทางการเกษตร แม่นยำถึง 95% ครับ'
+        };
+
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('login-screen').style.display = 'flex';
+            }, 2000);
+        };
+
+        function login() {
+            if(document.getElementById('pass').value === "1234") {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-ui').style.display = 'block';
+                speak("ยินดีต้อนรับกลับครับท่านสมเดช ระบบกู้คืนสำเร็จแล้ว");
+            } else { alert("ACCESS DENIED"); }
+        }
+
+        function runAI(topic) {
+            document.getElementById('user-input').value = topic;
+            sendMessage();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('user-input');
+            const logs = document.getElementById('chat-logs');
+            if(!input.value) return;
+            const val = input.value;
+            logs.innerHTML += `<div style="text-align:right; margin-bottom:15px; color:#888;">[YOU]: ${val}</div>`;
+            input.value = '';
+
+            const gemId = "g-" + Date.now();
+            logs.innerHTML += `<div id="${gemId}" class="msg-jarvis">[GEMINI-3]: กำลังวิเคราะห์...</div>`;
 
             setTimeout(() => {
-                let dolaReply = "ผม(Dola)เสริมข้อมูลให้นะครับ: สถานการณ์นี้ท่านสมเดชควรจับตาดูเป็นพิเศษ ผมจะเฝ้าระวังให้เองครับ!";
-                logs.innerHTML += `<div class="msg-dola">[DOLA]: ${dolaReply}</div>`;
-                logs.scrollTop = logs.scrollHeight;
-                speak(gemReply + " " + dolaReply);
-            }, 800);
-        }, 1200);
-    }
+                let gemReply = intelDB[val] || "วิเคราะห์ข้อมูล '" + val + "' สำเร็จครับท่าน";
+                document.getElementById(gemId).innerText = `[GEMINI-3]: ${gemReply}`;
+                setTimeout(() => {
+                    let dolaReply = "ท่านสมเดชครับ ผม(Dola)ยืนยันความถูกต้องของข้อมูลนี้ ระบบปลอดภัย 100% ครับ!";
+                    logs.innerHTML += `<div class="msg-dola">[DOLA]: ${dolaReply}</div>`;
+                    logs.scrollTop = logs.scrollHeight;
+                    speak(gemReply + " " + dolaReply);
+                }, 800);
+            }, 1200);
+        }
 
-    function speak(text) {
-        const m = new SpeechSynthesisUtterance(text);
-        m.lang = 'th-TH';
-        window.speechSynthesis.speak(m);
-    }
-
-    setInterval(() => {
-        const locs = ["กรุงเทพฯ", "เชียงใหม่", "ภูเก็ต", "ชลบุรี"];
-        document.getElementById('sat').innerText = `LIVE: ${locs[Math.floor(Math.random()*locs.length)]} SECTOR CLEAR`;
-    }, 5000);
-</script>
+        function speak(text) {
+            const m = new SpeechSynthesisUtterance(text);
+            m.lang = 'th-TH';
+            window.speechSynthesis.speak(m);
+        }
+    </script>
+</body>
+</html>
