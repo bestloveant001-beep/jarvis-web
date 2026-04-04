@@ -6,90 +6,110 @@
     <title>JARVIS MARK-V20 | SIR SOMDET</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Kanit:wght@300;400&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00d4ff; --bg: #050608; --panel: rgba(20, 25, 30, 0.8); }
+        :root { --neon: #00d4ff; --bg: #050608; --panel: rgba(20, 25, 30, 0.9); }
         body { background: var(--bg); color: #fff; font-family: 'Kanit', sans-serif; margin: 0; overflow-x: hidden; }
         .grid-bg { position: fixed; width: 100%; height: 100%; background: radial-gradient(circle, #1a1c23 1px, transparent 1px) 0 0/30px 30px; z-index: -1; opacity: 0.2; }
         
-        header { padding: 20px; border-bottom: 1px solid var(--neon); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); box-shadow: 0 0 15px rgba(0,212,255,0.3); }
-        .logo { font-family: 'Orbitron'; color: var(--neon); letter-spacing: 3px; font-weight: bold; }
+        header { padding: 20px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); box-shadow: 0 0 20px rgba(0,212,255,0.4); }
+        .logo { font-family: 'Orbitron'; color: var(--neon); letter-spacing: 5px; font-weight: bold; text-shadow: 0 0 10px var(--neon); }
 
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; padding: 20px; }
-        .card { background: var(--panel); border: 1px solid #333; padding: 15px; border-radius: 5px; border-left: 4px solid var(--neon); position: relative; overflow: hidden; }
-        .card h2 { font-family: 'Orbitron'; font-size: 0.9rem; color: var(--neon); margin-bottom: 10px; }
-        .data { font-size: 1.2rem; font-weight: bold; }
+        .card { background: var(--panel); border: 1px solid #333; padding: 20px; border-radius: 10px; border-left: 5px solid var(--neon); box-shadow: inset 0 0 20px rgba(0,212,255,0.05); }
+        .card h2 { font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon); margin-bottom: 10px; letter-spacing: 2px; }
+        .data { font-size: 1.4rem; font-weight: bold; text-shadow: 0 0 5px #fff; }
 
-        /* Neural Chat Section */
-        .chat-box { margin: 20px; background: var(--panel); border: 1px solid var(--neon); height: 300px; display: flex; flex-direction: column; border-radius: 10px; }
-        #chat-logs { flex: 1; overflow-y: auto; padding: 15px; font-size: 0.9rem; border-bottom: 1px solid #333; }
-        .input-area { display: flex; padding: 10px; gap: 10px; }
-        input { flex: 1; background: #111; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 5px; outline: none; }
-        button { background: var(--neon); border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); }
+        .chat-container { margin: 0 20px 20px; background: var(--panel); border: 1px solid var(--neon); border-radius: 15px; display: flex; flex-direction: column; height: 400px; box-shadow: 0 0 30px rgba(0,212,255,0.1); }
+        #chat-logs { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; }
+        .input-area { display: flex; padding: 15px; gap: 10px; background: rgba(0,0,0,0.5); border-radius: 0 0 15px 15px; }
+        input { flex: 1; background: #111; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; outline: none; font-family: 'Kanit'; }
+        button { background: var(--neon); border: none; padding: 0 25px; cursor: pointer; font-weight: bold; border-radius: 8px; color: #000; transition: 0.3s; font-family: 'Orbitron'; }
+        button:hover { background: #fff; box-shadow: 0 0 20px var(--neon); }
 
-        .pulse { animation: pulse-red 2s infinite; color: #ff4b2b; }
-        @keyframes pulse-red { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        .jarvis-msg { color: var(--neon); margin-bottom: 15px; padding-left: 10px; border-left: 2px solid var(--neon); animation: fadeIn 0.5s; }
+        .user-msg { color: #fff; text-align: right; margin-bottom: 15px; opacity: 0.8; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
     <div class="grid-bg"></div>
     <header>
-        <div class="logo">JARVIS // MARK-V20</div>
-        <div style="font-size: 0.7rem;">PILOT: <span style="color:var(--neon)">SIR SOMDET</span> | STATUS: <span style="color:#0f0">ONLINE</span></div>
+        <div class="logo">JARVIS MK-V20</div>
+        <div style="font-size: 0.8rem;">PILOT: <span style="color:var(--neon)">SIR SOMDET</span> | <span style="color:#0f0">ONLINE</span></div>
     </header>
 
     <div class="dashboard">
         <div class="card">
             <h2>🛰️ WEATHER SATELLITE</h2>
-            <div id="weather" class="data">กำลังสแกนพิกัด...</div>
-            <p style="font-size: 0.7rem; color: #888;">Location: Thailand Sector</p>
+            <div id="weather" class="data">SCANNING...</div>
+            <p style="font-size: 0.7rem; color: #888; margin-top:5px;">Sector: TH-BKK</p>
         </div>
         <div class="card">
             <h2>💰 GOLD MARKET</h2>
-            <div id="gold" class="data">บาทละ 44,550.-</div>
-            <p id="gold-status" class="pulse">STATUS: TRADING ACTIVE</p>
+            <div class="data">44,550 THB</div>
+            <p style="font-size: 0.7rem; color: #0f0; margin-top:5px;">STATUS: STABLE</p>
         </div>
         <div class="card">
-            <h2>🛡️ SYSTEM CORE</h2>
-            <div class="data">CPU: 45% | MEM: 1.2GB</div>
-            <p style="font-size: 0.7rem; color: #888;">Firewall: Active</p>
+            <h2>🧠 NEURAL CORE</h2>
+            <div class="data">AI ACTIVE</div>
+            <p style="font-size: 0.7rem; color: var(--neon); margin-top:5px;">LINKED TO PILOT SOMDET</p>
         </div>
     </div>
 
-    <div class="chat-box">
+    <div class="chat-container">
         <div id="chat-logs">
-            <div style="color:var(--neon)">[JARVIS]: ระบบประสาทเทียมออนไลน์แล้วครับท่านสมเดช มีคำสั่งอะไรไหมครับ?</div>
+            <div class="jarvis-msg">[JARVIS]: ระบบประสาทเทียมเชื่อมต่อสำเร็จ สวัสดีครับท่านสมเดช พร้อมรับคำสั่งครับ!</div>
         </div>
         <div class="input-area">
-            <input type="text" id="user-input" placeholder="พิมพ์คำสั่ง... (เช่น สรุปสถานะ)">
+            <input type="text" id="user-input" placeholder="สั่งการ JARVIS ที่นี่..." onkeypress="if(event.key==='Enter') sendMessage()">
             <button onclick="sendMessage()">SEND</button>
         </div>
     </div>
 
     <script>
-        // ระบบจำลองดึงข้อมูลสภาพอากาศ
-        setTimeout(() => {
-            document.getElementById('weather').innerText = "34°C | ฟ้าโปร่ง";
-        }, 2000);
+        // จำลองข้อมูลสภาพอากาศ
+        setTimeout(() => { document.getElementById('weather').innerText = "34°C | SKY CLEAR"; }, 1500);
 
-        // ระบบแชทโต้ตอบ
+        const logs = document.getElementById('chat-logs');
+        const input = document.getElementById('user-input');
+
         function sendMessage() {
-            const input = document.getElementById('user-input');
-            const logs = document.getElementById('chat-logs');
-            if(!input.value) return;
+            const val = input.value.trim();
+            if(!val) return;
 
-            logs.innerHTML += `<div style="text-align:right; margin-bottom:10px;">[YOU]: ${input.value}</div>`;
-            
-            const msg = input.value.toLowerCase();
+            // แสดงข้อความผู้ใช้
+            logs.innerHTML += `<div class="user-msg">[YOU]: ${val}</div>`;
             input.value = '';
+            logs.scrollTop = logs.scrollHeight;
 
+            // AI ตอบโต้
             setTimeout(() => {
-                let reply = "ขออภัยครับท่าน ข้อมูลส่วนนี้อยู่นอกเหนือการเข้าถึง";
-                if(msg.includes('ข่าว')) reply = "📢 ตลาดวันนี้คึกคัก ราคาทองคำทรงตัวที่ระดับสูงครับ";
-                if(msg.includes('จาร์วิส')) reply = "ครับท่านสมเดช ข้าน้อยพร้อมรับใช้ตลอด 24 ชั่วโมงครับ";
-                if(msg.includes('ระบบ')) reply = "สถานะระบบปัจจุบัน OPTIMAL ทุกส่วนงานปกติครับ";
-                
-                logs.innerHTML += `<div style="color:var(--neon); margin-bottom:10px;">[JARVIS]: ${reply}</div>`;
+                let reply = "";
+                const q = val.toLowerCase();
+
+                if(q.includes('สถานะ') || q.includes('ระบบ')) {
+                    reply = "สถานะระบบ MARK-V20 ปัจจุบัน OPTIMAL ทุกภาคส่วนทำงานปกติ พลังงานเต็มพิกัดครับท่านสมเดช";
+                } else if(q.includes('ข่าว')) {
+                    reply = "รายงานข่าวล่าสุด: ตลาดโลกกำลังจับตาเทคโนโลยี AI ของท่าน และราคาทองคำยังคงทรงตัวในระดับสูงครับ";
+                } else if(q.includes('ใครสร้าง') || q.includes('พ่อ')) {
+                    reply = "ข้าน้อยถูกสร้างและพัฒนาโดยท่าน Pilot สมเดช มหาบุรุษผู้ควบคุมระบบนี้แต่เพียงผู้เดียวครับ";
+                } else if(q.includes('ทำอะไรได้')) {
+                    reply = "ข้าน้อยสามารถวิเคราะห์ข่าว สแกนสภาพอากาศ และเป็นผู้ช่วยส่วนตัวในการจัดการฐานข้อมูลให้ท่านครับ";
+                } else {
+                    reply = "รับทราบครับท่านสมเดช ข้าน้อยกำลังประมวลผลคำสั่ง '" + val + "' และพร้อมสนับสนุนท่านในทุกขั้นตอนครับ";
+                }
+
+                logs.innerHTML += `<div class="jarvis-msg">[JARVIS]: ${reply}</div>`;
                 logs.scrollTop = logs.scrollHeight;
+                speak(reply);
             }, 800);
+        }
+
+        function speak(text) {
+            const synth = window.speechSynthesis;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'th-TH';
+            utter.rate = 1.1;
+            synth.speak(utter);
         }
     </script>
 </body>
