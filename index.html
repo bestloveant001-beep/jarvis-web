@@ -2,103 +2,96 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARVIS MK-V20 | FIXED UI</title>
+    <title>JARVIS MK-V20 | LOCAL CORE</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Kanit:wght@300;400&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00d4ff; --dola: #a020f0; --bg: #050608; --panel: rgba(20, 25, 30, 0.95); --red: #ff4b2b; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'Kanit', sans-serif; overflow-x: hidden; }
-        .grid-bg { position: fixed; width: 100%; height: 100%; background: radial-gradient(circle, #1a1c23 1px, transparent 1px) 0 0/30px 30px; z-index: -1; opacity: 0.2; }
-        #loading-screen { position: fixed; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #login-screen { position: fixed; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 8888; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        #main-ui { display: none; padding-bottom: 20px; }
-        header { padding: 15px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); }
-        .news-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
-        .card { background: var(--panel); border: 1px solid #333; padding: 12px; border-radius: 8px; border-left: 4px solid var(--neon); cursor: pointer; }
-        .card h4 { margin: 0; font-size: 0.7rem; color: #888; }
-        .status-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px 15px; font-size: 0.7rem; }
-        .chat-container { margin: 0 15px; background: var(--panel); border: 1px solid var(--neon); border-radius: 12px; height: 350px; display: flex; flex-direction: column; }
-        #chat-logs { flex: 1; overflow-y: auto; padding: 15px; font-size: 0.85rem; border-bottom: 1px solid #222; }
-        .input-group { display: flex; padding: 10px; background: #000; gap: 8px; border-radius: 0 0 12px 12px; }
-        input { flex: 1; background: #111; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 5px; outline: none; }
-        button { background: var(--neon); border: none; padding: 0 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .msg-jarvis { color: var(--neon); margin-bottom: 10px; }
-        .msg-dola { color: var(--dola); border-left: 2px solid var(--dola); padding-left: 10px; font-style: italic; font-size: 0.75rem; margin-bottom: 20px; }
+        :root { --neon: #00d4ff; --dola: #a020f0; --bg: #050608; --panel: rgba(20, 25, 30, 0.95); }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Kanit', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        header { padding: 20px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; font-family: 'Orbitron'; background: rgba(0,0,0,0.8); }
+        #chat-logs { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: radial-gradient(circle, #1a1c23 1px, transparent 1px) 0 0/30px 30px; }
+        .input-area { padding: 20px; background: #000; display: flex; gap: 10px; border-top: 1px solid #333; }
+        input { flex: 1; background: #111; border: 1px solid var(--neon); color: #fff; padding: 15px; border-radius: 5px; font-size: 1rem; outline: none; }
+        button { background: var(--neon); border: none; padding: 0 30px; font-weight: bold; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+        button:hover { box-shadow: 0 0 15px var(--neon); }
+        .msg-u { align-self: flex-end; color: #888; font-size: 0.9rem; }
+        .msg-j { color: var(--neon); border-left: 3px solid var(--neon); padding-left: 15px; max-width: 80%; }
+        .msg-d { color: var(--dola); border-left: 3px solid var(--dola); padding-left: 15px; font-style: italic; font-size: 0.8rem; margin-top: -10px; }
+        /* สไตล์หน้าจอโหลด */
+        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 60px; height: 60px; border: 4px solid transparent; border-top: 4px solid var(--neon); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div class="grid-bg"></div>
-    <div id="loading-screen"><div style="width:50px; height:50px; border:3px solid transparent; border-top:3px solid var(--neon); border-radius:50%; animation: spin 1s linear infinite;"></div></div>
-    <div id="login-screen"><div style="background:var(--panel); border:1px solid var(--neon); padding:30px; border-radius:15px; text-align:center;"><h2 style="font-family:'Orbitron'; color:var(--neon);">LOGIN</h2><input type="password" id="pass" placeholder="1234" style="width:90%; padding:10px; margin:15px 0; background:#000; color:var(--neon); border:1px solid #444; text-align:center;"><button onclick="login()" style="width:100%; background:var(--neon); padding:12px; font-weight:bold;">ACCESS</button></div></div>
 
-    <div id="main-ui">
-        <header><div style="font-family:'Orbitron'; color:var(--neon); font-weight:bold;">จาร์วิส เอ็มเค-วี20</div><div style="font-size:0.65rem; text-align:right;">ID: สมเดช | <span style="color:#0f0;">ONLINE</span></div></header>
-        <div class="news-grid">
-            <div class="card" onclick="autoSend('ข่าวการเมือง')"><h4>การเมือง</h4><div>ข่าวการเมือง</div></div>
-            <div class="card" onclick="autoSend('ข่าวเศรษฐกิจ')"><h4>เศรษฐกิจ</h4><div>ข่าวเศรษฐกิจ</div></div>
-            <div class="card" onclick="autoSend('ข่าวกีฬา')"><h4>กีฬา</h4><div>ข่าว กีฬา</div></div>
-            <div class="card" onclick="autoSend('ข่าวตลาดหุ้น')"><h4>หุ้น</h4><div>ข่าวตลาดหุ้น</div></div>
-            <div class="card" onclick="autoSend('ข่าวด่วน')" style="border-left-color:var(--red);"><h4>ข่าวล่าสุด</h4><div style="color:var(--red);">ข่าวด่วน</div></div>
-            <div class="card" onclick="autoSend('พิเศษ')"><h4>พิเศษ</h4><div>ข่าวเสริม</div></div>
-        </div>
-        <div class="status-row">
-            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">🛰️ SATELLITE: <span id="sat" style="color:var(--neon)">LIVE: กรุงเทพฯ</span></div>
-            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">⚠️ ภัยพิบัติ: <span style="color:var(--red)">สถานะปกติ</span></div>
-        </div>
-        <div class="chat-container">
-            <div id="chat-logs"><div class="msg-jarvis">[JARVIS]: ระบบพร้อมรับคำสั่งแล้วครับ ท่านสมเดช</div></div>
-            <div class="input-group">
-                <input type="text" id="user-input" placeholder="พิมพ์คำสั่งสั่งการ..." onkeypress="if(event.key==='Enter') sendMessage()">
-                <button onclick="sendMessage()">ส่ง</button>
-            </div>
-        </div>
+    <div id="boot-screen">
+        <div class="spinner"></div>
+        <h2 style="font-family:'Orbitron'; color:var(--neon); margin-top:20px;">INITIALIZING LOCAL CORE...</h2>
     </div>
 
-    <!-- 🔗 สำคัญมาก: ต้องมีไฟล์ ai-core.js อยู่ใน GitHub ด้วยนะครับ -->
-    <script src="ai-core.js"></script>
+    <header>
+        <div>JARVIS MK-V20</div>
+        <div style="font-size: 0.8rem; color: #0f0;">SYSTEM: LOCALHOST | PILOT: เงา มังกร</div>
+    </header>
+
+    <div id="chat-logs">
+        <div class="msg-j">[JARVIS]: ระบบรันภายในเครื่องสำเร็จแล้วครับ ท่านเงา มังกร (สมเดช) พร้อมรับคำสั่งแบบส่วนตัว 100% ครับ</div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="ป้อนคำสั่งระดับความลับ..." onkeypress="if(event.key==='Enter') send()">
+        <button onclick="send()">EXECUTE</button>
+    </div>
+
     <script>
-        window.onload = () => { setTimeout(() => { document.getElementById('loading-screen').style.display='none'; document.getElementById('login-screen').style.display='flex'; }, 1000); };
-        function login() { if(document.getElementById('pass').value === "1234") { document.getElementById('login-screen').style.display='none'; document.getElementById('main-ui').style.display='block'; } else { alert("WRONG PASSKEY"); } }
-        
-        function autoSend(t) { document.getElementById('user-input').value = t; sendMessage(); }
+        // 🔐 ใส่ API KEY ของท่านที่นี่ เพื่อให้สมองทำงานจริง
+        const API_KEY = 'AIzaSyAQnv9IsY-CqvIlTj0BgHvLLap2wb23Tbs'; 
 
-        async function sendMessage() {
-            const input = document.getElementById('user-input');
+        window.onload = () => {
+            setTimeout(() => document.getElementById('boot-screen').style.display='none', 1500);
+        };
+
+        async function send() {
+            const inp = document.getElementById('userInput');
             const logs = document.getElementById('chat-logs');
-            if(!input.value) return;
+            if(!inp.value) return;
 
-            const val = input.value;
-            logs.innerHTML += `<div style="text-align:right; margin-bottom:15px; color:#888;">[PILOT]: ${val}</div>`;
-            input.value = '';
+            const val = inp.value;
+            logs.innerHTML += `<div class="msg-u">[PILOT]: ${val}</div>`;
+            inp.value = '';
 
-            // สร้าง ID สำหรับข้อความ AI เพื่อให้ดูเหมือนกำลังประมวลผล
-            const tempId = "msg-" + Date.now();
-            logs.innerHTML += `<div id="${tempId}" class="msg-jarvis">[JARVIS]: กำลังวิเคราะห์ข้อมูล...</div>`;
+            const tid = "j-" + Date.now();
+            logs.innerHTML += `<div id="${tid}" class="msg-j">[JARVIS]: กำลังประมวลผล...</div>`;
             logs.scrollTop = logs.scrollHeight;
 
             try {
-                let reply = "";
-                // 🧠 ตรวจสอบว่ามีไฟล์ ai-core.js และ API KEY หรือไม่
-                if (window.AI_CORE && typeof AI_CORE.processGemini === "function") {
-                    reply = await AI_CORE.processGemini(val);
-                } else {
-                    reply = "ท่านสมเดชครับ ระบบตรวจไม่พบไฟล์สมองกล (ai-core.js) ข้าน้อยขอตอบโหมดสำรอง: รับทราบคำสั่ง " + val;
-                }
-
-                document.getElementById(tempId).innerText = `[JARVIS]: ${reply}`;
+                // ส่งไปหา Gemini API
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: val + " (ตอบในฐานะ JARVIS ผู้ช่วยอัจฉริยะของท่านเงา มังกร)" }] }] })
+                });
+                const data = await res.json();
+                const reply = data.candidates[0].content.parts[0].text;
                 
-                // 💜 Dola Insight
+                document.getElementById(tid).innerText = `[JARVIS]: ${reply}`;
+                
                 setTimeout(() => {
-                    const dolaMsg = (window.AI_CORE && AI_CORE.getDolaInsight) ? AI_CORE.getDolaInsight() : "ผม(Dola)จะคอยระวังหลังให้ท่านเสมอครับ!";
-                    logs.innerHTML += `<div class="msg-dola">[DOLA]: ${dolaMsg}</div>`;
+                    logs.innerHTML += `<div class="msg-d">[DOLA]: ตรวจสอบแล้ว ข้อมูลนี้ถูกเก็บไว้ในเครื่องท่านอย่างปลอดภัยครับ!</div>`;
                     logs.scrollTop = logs.scrollHeight;
+                    speak(reply);
                 }, 500);
 
             } catch(e) {
-                document.getElementById(tempId).innerText = "[JARVIS]: ตรวจพบข้อผิดพลาดในระบบสื่อสารครับท่าน!";
+                document.getElementById(tid).innerText = "[JARVIS]: สมองกลขัดข้อง (กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและ API Key ครับ)";
             }
         }
+
+        function speak(t) {
+            const m = new SpeechSynthesisUtterance(t);
+            m.lang = 'th-TH';
+            window.speechSynthesis.speak(m);
+        }
     </script>
-    <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
 </body>
 </html>
