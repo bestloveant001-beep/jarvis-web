@@ -1,6 +1,6 @@
 // [ MARK-V20 // WEB-CORE: GEMINI-2.5-STABLE ]
 const JARVIS_CONFIG = {
-    apiKey: "AIzaSyCqfkj3d0Ni78MSRqnCCEtjE7yUUJ8joXs",
+    apiKey: "AIzaSyCQCyTusMyCd5HI7YZny1LbQA3FLOfgLuE",
     model: "gemini-2.5-flash",
     personality: "45% Sarcastic, British Tone, Bilingual (TH/EN)"
 };
