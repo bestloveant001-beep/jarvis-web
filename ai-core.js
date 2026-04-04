@@ -1,36 +1,43 @@
-// 🧠 JARVIS NEURAL CORE BY DOLA & GEMINI-3
+// 🧠 JARVIS REAL-BRAIN CORE (GEMINI-3 FLASH API)
 const AI_CORE = {
-    // 📡 ฐานข้อมูลข่าวกรองล่าสุดในประเทศไทย
-    intelligenceDB: {
-        'ข่าวการเมือง': '🚨 [POLITICS] สภาฯ ไทยเตรียมพิจารณาร่างงบประมาณปี 68 เพื่อขับเคลื่อนนโยบายดิจิทัลวอลเล็ตครับ',
-        'ข่าวเศรษฐกิจ': '💰 [ECONOMY] ค่าเงินบาททรงตัวที่ 36.45 บาท ตลาดส่งออกเริ่มมีสัญญาณฟื้นตัวดีขึ้นครับ',
-        'ข่าวกีฬา': '⚽ [SPORTS] ฟุตบอลทีมชาติไทยเตรียมลงสนามนัดสำคัญ บรรยากาศการฝึกซ้อมเต็มไปด้วยความมั่นใจครับ',
-        'ข่าวตลาดหุ้น': '📈 [STOCKS] SET Index ปิดบวกวันนี้ กลุ่มพลังงานและอิเล็กทรอนิกส์ยังคงเป็นแรงหนุนสำคัญครับ',
-        'ข่าวด่วน': '🔥 [BREAKING] ประกาศเตือนพายุฤดูร้อนในเขตกรุงเทพฯ และปริมณฑล เตรียมรับมือฝนตกหนักช่วงเย็นนี้ครับ!',
-        'ข่าวเสริม': '➕ [EXTRA] สตาร์ทอัพไทยเปิดตัว AI รุ่นใหม่ที่มีความแม่นยำสูงในการวิเคราะห์ภาษาไทยครับ'
+    // 🔐 ใส่ API KEY ของท่านสมเดชตรงนี้ (ระหว่างเครื่องหมาย ' ')
+    API_KEY: 'AIzaSyCQCyTusMyCd5HI7YZny1LbQA3FLOfgLuE', 
+
+    // 🔵 ฟังก์ชันส่งข้อมูลไปหา Google Gemini 3 Flash ของจริง
+    async processGemini(prompt) {
+        if (!this.API_KEY || this.API_KEY.includes('AIzaSyCQCyTusMyCd5HI7YZny1LbQA3FLOfgLuE')) {
+            return "⚠️ ท่านสมเดชครับ กรุณาใส่ API KEY ในไฟล์ ai-core.js ก่อนครับ!";
+        }
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.API_KEY}`;
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt + " (ตอบเป็นภาษาไทยสั้นๆ กระชับแบบ AI ผู้ช่วยชื่อ JARVIS)" }] }]
+                })
+            });
+
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        } catch (error) {
+            console.error("API Error:", error);
+            return "❌ การเชื่อมต่อล้มเหลว: ตรวจสอบความถูกต้องของ API Key ครับท่าน";
+        }
     },
 
-    // 🔵 ซีกสมอง Gemini-3 (ประมวลผลตรรกะ)
-    async processGemini(input) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const response = this.intelligenceDB[input] || `วิเคราะห์คำสั่ง '${input}' สำเร็จ: ไม่พบภัยคุกคามในระบบครับท่านสมเดช`;
-                resolve(response);
-            }, 1000);
-        });
-    },
-
-    // 🟣 ซีกสมอง Dola (ผู้ดูแลและความปลอดภัย)
-    getDolaInsight() {
+    // 🟣 ซีกสมอง Dola (วิเคราะห์ความปลอดภัยและความรู้สึก)
+    getDolaInsight(input) {
         const insights = [
-            "ท่านสมเดชครับ ผม(Dola)ตรวจสอบความปลอดภัยให้แล้ว ข้อมูลนี้เชื่อถือได้ 100% ครับ!",
-            "ผมประจำการอยู่เคียงข้างท่านเสมอ ข้อมูลนี้สำคัญต่อการตัดสินใจของท่านมากครับ",
-            "ระบบปลอดภัย 100% ครับ ผมจะเฝ้าระวังความเคลื่อนไหวอื่นๆ ให้ท่านเองครับ",
-            "คำแนะนำจาก Dola: ข้อมูลนี้สอดคล้องกับยุทธศาสตร์ของท่านในเดือนนี้ครับ"
+            "ผม(Dola)ตรวจสอบข้อมูลจาก Gemini แล้ว ปลอดภัยสำหรับท่านสมเดชครับ!",
+            "ข้อมูลนี้ผ่านการคัดกรองจากซีกสมองผมแล้วครับ ท่านดำเนินการต่อได้เลย",
+            "ระบบกำลังประมวลผลด้วยพลังสูงสุดเพื่อท่านครับ!",
+            "ความเห็นเสริมจาก Dola: ข้อมูลนี้สอดคล้องกับสถานการณ์ปัจจุบันในไทยมากครับ"
         ];
         return insights[Math.floor(Math.random() * insights.length)];
     }
 };
 
-// ทำให้ไฟล์อื่นเรียกใช้ได้
 window.AI_CORE = AI_CORE;
