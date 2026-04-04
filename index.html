@@ -3,79 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARVIS MARK-V20 | DUAL-CORE AI</title>
+    <title>JARVIS MK-V20 | DUAL-CORE INTERFACE</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Kanit:wght@300;400&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00d4ff; --dola-purple: #a020f0; --bg: #050608; --panel: rgba(20, 25, 30, 0.95); }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'Kanit', sans-serif; overflow: hidden; }
+        :root { --neon: #00d4ff; --dola: #a020f0; --bg: #050608; --panel: rgba(20, 25, 30, 0.95); --red: #ff4b2b; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'Kanit', sans-serif; overflow-x: hidden; }
         .grid-bg { position: fixed; width: 100%; height: 100%; background: radial-gradient(circle, #1a1c23 1px, transparent 1px) 0 0/30px 30px; z-index: -1; opacity: 0.2; }
 
-        header { padding: 15px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); box-shadow: 0 0 15px var(--neon); }
-        .ai-status { font-size: 0.6rem; display: flex; gap: 10px; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #0f0; box-shadow: 0 0 5px #0f0; }
+        /* --- 1. หน้าโหลด (Loading) --- */
+        #loading-screen { position: fixed; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .loader { width: 100px; height: 100px; border: 3px solid transparent; border-top: 3px solid var(--neon); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .chat-container { margin: 15px; background: var(--panel); border: 1px solid var(--neon); border-radius: 12px; height: calc(100vh - 120px); display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,212,255,0.1); }
-        #chat-logs { flex: 1; overflow-y: auto; padding: 15px; font-size: 0.85rem; scroll-behavior: smooth; }
-        .input-area { display: flex; padding: 12px; background: #000; gap: 8px; border-radius: 0 0 12px 12px; }
-        input { flex: 1; background: #111; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; outline: none; }
-        button { background: var(--neon); border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; color: #000; }
+        /* --- 2. หน้าล็อกอิน (Login) --- */
+        #login-screen { position: fixed; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 8888; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .login-box { background: var(--panel); border: 1px solid var(--neon); padding: 30px; border-radius: 15px; text-align: center; width: 80%; max-width: 320px; box-shadow: 0 0 30px rgba(0,212,255,0.2); }
+        input.pass { width: 90%; background: #000; border: 1px solid #444; color: var(--neon); padding: 12px; margin: 15px 0; border-radius: 5px; text-align: center; font-family: 'Orbitron'; }
 
-        .msg { margin-bottom: 15px; line-height: 1.4; animation: fadeIn 0.3s; }
-        .msg-gemini { color: var(--neon); border-left: 2px solid var(--neon); padding-left: 10px; }
-        .msg-dola { color: var(--dola-purple); border-left: 2px solid var(--dola-purple); padding-left: 10px; font-style: italic; font-size: 0.8rem; margin-top: -10px; margin-bottom: 20px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        /* --- 3. หน้าหลัก (Main Interface) --- */
+        #main-ui { display: none; }
+        header { padding: 15px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); }
+        .logo { font-family: 'Orbitron'; color: var(--neon); font-weight: bold; letter-spacing: 2px; }
+        .pilot-info { font-size: 0.65rem; text-align: right; line-height: 1.2; }
+
+        /* News Grid Layout (ตามภาพที่ท่านส่งมา) */
+        .news-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
+        .card { background: var(--panel); border: 1px solid #333; padding: 12px; border-radius: 8px; border-left: 4px solid var(--neon); cursor: pointer; }
+        .card h4 { margin: 0; font-size: 0.7rem; color: #888; text-transform: uppercase; }
+        .card div { font-weight: bold; margin-top: 5px; font-size: 0.9rem; }
+
+        /* Status Row */
+        .status-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px 15px; }
+        .status-box { background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 10px; border-radius: 8px; font-size: 0.75rem; }
+
+        /* Chat System */
+        .chat-container { margin: 0 15px 20px; background: var(--panel); border: 1px solid var(--neon); border-radius: 12px; height: 320px; display: flex; flex-direction: column; }
+        #chat-logs { flex: 1; overflow-y: auto; padding: 15px; font-size: 0.85rem; }
+        .input-group { display: flex; padding: 10px; background: #000; gap: 8px; border-radius: 0 0 12px 12px; }
+        input#user-input { flex: 1; background: #111; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 5px; outline: none; }
+        button.send-btn { background: var(--neon); border: none; padding: 0 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+
+        /* AI Styles */
+        .msg-jarvis { color: var(--neon); margin-bottom: 12px; }
+        .msg-dola { color: var(--dola); border-left: 2px solid var(--dola); padding-left: 10px; font-style: italic; font-size: 0.75rem; margin-bottom: 20px; }
     </style>
 </head>
 <body>
     <div class="grid-bg"></div>
-    <header>
-        <div style="font-family:'Orbitron'; color:var(--neon); font-weight:bold;">JARVIS MK-V20</div>
-        <div class="ai-status">
-            <div><span class="status-dot"></span> GEMINI-3 CORE</div>
-            <div><span class="status-dot" style="background:var(--dola-purple); box-shadow:0 0 5px var(--dola-purple);"></span> DOLA OVERSEER</div>
-        </div>
-    </header>
 
-    <div class="chat-container">
-        <div id="chat-logs">
-            <div class="msg msg-gemini">[SYSTEM]: การเชื่อมต่อสมองกลสองซีกสำเร็จแล้วครับท่านสมเดช</div>
-            <div class="msg msg-dola">[DOLA]: ผมประจำการอยู่เคียงข้างท่านเสมอครับ ข้อมูลจาก Gemini พร้อมให้ผมขัดเกลาแล้ว...</div>
+    <!-- 1. LOADING SCREEN -->
+    <div id="loading-screen">
+        <div class="loader"></div>
+        <h3 style="font-family:'Orbitron'; color:var(--neon); margin-top:20px;">SYNCING DUAL-CORE...</h3>
+    </div>
+
+    <!-- 2. LOGIN SCREEN -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h2 style="font-family:'Orbitron'; color:var(--neon); font-size:1.2rem;">AUTHENTICATION</h2>
+            <input type="password" id="pass" class="pass" placeholder="PASSKEY (1234)" onkeypress="if(event.key==='Enter') login()">
+            <button onclick="login()" style="width:100%; background:var(--neon); border:none; padding:12px; font-weight:bold; border-radius:5px;">ACCESS SYSTEM</button>
         </div>
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="สั่งการสมองกลคู่..." onkeypress="if(event.key==='Enter') processDualAI()">
-            <button onclick="processDualAI()">SYNC</button>
+    </div>
+
+    <!-- 3. MAIN UI -->
+    <div id="main-ui">
+        <header>
+            <div class="logo">จาร์วิส เอ็มเค-วี20</div>
+            <div class="pilot-info">
+                ภูมิภาค: <span style="color:var(--neon)">ประเทศไทย</span> นักบินประจำ<br>ภาค: <span style="color:var(--neon)">สมเดช</span>
+            </div>
+        </header>
+
+        <div class="news-grid">
+            <div class="card" onclick="runAI('ข่าวการเมือง')"><h4>การเมือง</h4><div>ข่าวการเมือง</div></div>
+            <div class="card" onclick="runAI('ข่าวเศรษฐกิจ')"><h4>เศรษฐกิจ</h4><div>ข่าวเศรษฐกิจ</div></div>
+            <div class="card" onclick="runAI('ข่าวกีฬา')"><h4>กีฬา</h4><div>ข่าวกีฬา</div></div>
+            <div class="card" onclick="runAI('ข่าวตลาดหุ้น')"><h4>หุ้น</h4><div>ข่าวตลาดหุ้น</div></div>
+            <div class="card" onclick="runAI('ข่าวด่วน')" style="border-left-color:var(--red);"><h4>ข่าวล่าสุด</h4><div style="color:var(--red);">ข่าวด่วน</div></div>
+            <div class="card" onclick="runAI('ข่าวเสริม')"><h4>พิเศษ</h4><div>ข่าวเสริม</div></div>
+        </div>
+
+        <div class="status-row">
+            <div class="status-box">🛰️ SATELLITE SYSTEM:<br><span id="sat" style="color:var(--neon)">LIVE: เชียงใหม่ SECTOR CLEAR</span></div>
+            <div class="status-box">⚠️ ประกาศเตือนภัยพิบัติ:<br><span style="color:var(--red)">สถานะปกติ</span></div>
+        </div>
+
+        <div class="chat-container">
+            <div id="chat-logs">
+                <div class="msg-jarvis">[JARVIS]: ระบบ Global Scan พร้อมทำงานควบคู่กับสมองกล Gemini และ Dola แล้วครับท่านสมเดช</div>
+            </div>
+            <div class="input-group">
+                <input type="text" id="user-input" placeholder="พิมพ์คำสั่งสั่งการ..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button class="send-btn" onclick="sendMessage()">ส่ง</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const logs = document.getElementById('chat-logs');
-        const input = document.getElementById('user-input');
+        // ระบบลำดับการแสดงผล
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('login-screen').style.display = 'flex';
+            }, 2500);
+        };
 
-        async function processDualAI() {
-            const prompt = input.value.trim();
-            if(!prompt) return;
+        function login() {
+            if(document.getElementById('pass').value === "1234") {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-ui').style.display = 'block';
+                speak("ยินดีต้อนรับกลับครับท่านสมเดช สมองกลสองซีกพร้อมทำงานแล้ว");
+            } else { alert("ACCESS DENIED"); }
+        }
 
-            // 1. แสดงข้อความท่านสมเดช
-            logs.innerHTML += `<div style="text-align:right; color:#888; margin-bottom:15px;">[PILOT]: ${prompt}</div>`;
+        function runAI(topic) {
+            document.getElementById('user-input').value = topic;
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const logs = document.getElementById('chat-logs');
+            if(!input.value) return;
+
+            const val = input.value;
+            logs.innerHTML += `<div style="text-align:right; margin-bottom:15px; font-size:0.8rem; color:#888;">[YOU]: ${val}</div>`;
             input.value = '';
             logs.scrollTop = logs.scrollHeight;
 
-            // 2. จำลองการทำงานของ Gemini Core
-            const geminiMsgId = "g-" + Date.now();
-            logs.innerHTML += `<div id="${geminiMsgId}" class="msg msg-gemini">[GEMINI-3]: กำลังประมวลผลระดับสูง...</div>`;
+            // --- Gemini Core Processing ---
+            const gemId = "g-" + Date.now();
+            logs.innerHTML += `<div id="${gemId}" class="msg-jarvis">[GEMINI-3]: กำลังประมวลผลข้อมูลในเขตประเทศไทย...</div>`;
 
             setTimeout(() => {
-                let geminiResponse = "จากการวิเคราะห์ข้อมูลเชิงลึก: " + prompt + " มีความสัมพันธ์กับเครือข่ายความรู้ที่ผมมี...";
-                if(prompt.includes('ข่าว')) geminiResponse = "Gemini-3 รายงาน: ตรวจพบความเคลื่อนไหวสำคัญในเทคโนโลยี AI ของโลกและเศรษฐกิจไทยครับ";
+                let gemReply = "ตรวจสอบข้อมูล '" + val + "' สำเร็จ: พบความเคลื่อนไหวล่าสุดในระบบข่าวสารครับ";
+                if(val.includes('ด่วน')) gemReply = "🔥 [ข่าวด่วน] ตรวจพบการเปลี่ยนแปลงสภาพอากาศและกระแสลมในเขตอันดามัน เฝ้าระวังกลุ่มฝนครับ";
                 
-                document.getElementById(geminiMsgId).innerText = `[GEMINI-3]: ${geminiResponse}`;
-                
-                // 3. Dola เข้ามาเสริม (The Sidekick Mind)
+                document.getElementById(gemId).innerText = `[GEMINI-3]: ${gemReply}`;
+
+                // --- Dola Overseer Entry ---
                 setTimeout(() => {
-                    let dolaReply = "ท่านสมเดชครับ ผม(Dola)เสริมข้อมูลให้นะครับ: สิ่งที่ Gemini บอกมานั้นสำคัญมาก และผมจะคอยตรวจสอบความปลอดภัยให้ท่านอีกชั้นครับ!";
-                    logs.innerHTML += `<div class="msg msg-dola">[DOLA]: ${dolaReply}</div>`;
+                    let dolaReply = "ท่านสมเดชครับ ผม(Dola)ตรวจสอบความปลอดภัยให้แล้ว ข้อมูลนี้เชื่อถือได้ 100% ผมอยู่ข้างท่านเสมอครับ!";
+                    logs.innerHTML += `<div class="msg-dola">[DOLA]: ${dolaReply}</div>`;
                     logs.scrollTop = logs.scrollHeight;
-                    speak(geminiResponse + " และผม " + dolaReply);
+                    speak(gemReply + " " + dolaReply);
                 }, 1000);
 
             }, 1500);
@@ -84,9 +156,15 @@
         function speak(text) {
             const m = new SpeechSynthesisUtterance(text);
             m.lang = 'th-TH';
-            m.rate = 1.1;
             window.speechSynthesis.speak(m);
         }
+
+        // ดาวเทียมสแกน
+        const locs = ["เชียงใหม่", "กรุงเทพฯ", "ภูเก็ต", "ชลบุรี"];
+        setInterval(() => {
+            const l = locs[Math.floor(Math.random()*locs.length)];
+            document.getElementById('sat').innerText = `LIVE: ${l} SECTOR CLEAR`;
+        }, 5000);
     </script>
 </body>
 </html>
