@@ -3,116 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARVIS MARK-V20 | GLOBAL COMMAND</title>
+    <title>JARVIS MK-V20 | SECURITY INTERFACE</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Kanit:wght@300;400&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00d4ff; --bg: #050608; --panel: rgba(20, 25, 30, 0.9); --red: #ff4b2b; }
-        body { background: var(--bg); color: #fff; font-family: 'Kanit', sans-serif; margin: 0; overflow-x: hidden; }
+        :root { --neon: #00d4ff; --bg: #050608; --panel: rgba(20, 25, 30, 0.95); --red: #ff4b2b; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'Kanit', sans-serif; overflow: hidden; }
         .grid-bg { position: fixed; width: 100%; height: 100%; background: radial-gradient(circle, #1a1c23 1px, transparent 1px) 0 0/30px 30px; z-index: -1; opacity: 0.2; }
-        
+
+        /* --- 1. หน้าโหลด (Loading Screen) --- */
+        #loading-screen { position: fixed; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .loader-ring { width: 150px; height: 150px; border: 2px solid transparent; border-top: 2px solid var(--neon); border-radius: 50%; animation: spin 1s linear infinite; }
+        .loader-ring::before { content: ""; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; border: 2px solid transparent; border-top: 2px solid var(--red); border-radius: 50%; animation: spin 2s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- 2. หน้าล็อกอิน (Login Screen) --- */
+        #login-screen { position: fixed; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 8888; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .login-box { background: var(--panel); border: 1px solid var(--neon); padding: 40px; border-radius: 15px; text-align: center; box-shadow: 0 0 50px rgba(0,212,255,0.2); width: 80%; max-width: 350px; }
+        .login-box input { width: 100%; background: #000; border: 1px solid #444; color: var(--neon); padding: 15px; margin: 15px 0; border-radius: 5px; text-align: center; font-family: 'Orbitron'; font-size: 1.1rem; }
+        .login-btn { width: 100%; background: var(--neon); color: #000; border: none; padding: 15px; font-weight: bold; cursor: pointer; font-family: 'Orbitron'; letter-spacing: 2px; }
+
+        /* --- 3. หน้าหลัก (Main UI) --- */
+        #main-interface { display: none; height: 100vh; overflow-y: auto; }
         header { padding: 15px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); position: sticky; top: 0; z-index: 100; }
-        .logo { font-family: 'Orbitron'; color: var(--neon); letter-spacing: 3px; font-weight: bold; font-size: 1.2rem; }
+        .logo { font-family: 'Orbitron'; color: var(--neon); letter-spacing: 3px; font-weight: bold; }
+        .user-id { font-size: 0.7rem; text-align: right; border: 1px solid var(--neon); padding: 5px 10px; border-radius: 5px; background: rgba(0, 212, 255, 0.1); }
 
-        /* News Categories Grid */
-        .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; padding: 15px; }
-        .news-card { background: var(--panel); border: 1px solid #333; padding: 12px; border-radius: 8px; border-left: 3px solid var(--neon); transition: 0.3s; cursor: pointer; }
-        .news-card:hover { border-color: var(--neon); transform: scale(1.02); background: rgba(0, 212, 255, 0.1); }
-        .news-card h3 { font-size: 0.8rem; margin: 0 0 5px 0; color: #888; font-family: 'Orbitron'; }
-        .news-card div { font-size: 0.95rem; font-weight: bold; color: #fff; }
-
-        /* Satellite & Disaster Section */
-        .system-status { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px 15px; }
-        .status-box { background: rgba(0,0,0,0.5); border: 1px solid #444; padding: 10px; border-radius: 8px; font-size: 0.8rem; }
-        .alert { color: var(--red); animation: pulse 1.5s infinite; }
-
-        /* Chat Section */
-        .chat-area { margin: 0 15px 15px; background: var(--panel); border: 1px solid var(--neon); border-radius: 12px; height: 300px; display: flex; flex-direction: column; }
-        #chat-logs { flex: 1; overflow-y: auto; padding: 15px; font-size: 0.85rem; }
-        .input-group { display: flex; padding: 10px; gap: 5px; background: #000; border-radius: 0 0 12px 12px; }
-        input { flex: 1; background: #111; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 5px; outline: none; }
-        button { background: var(--neon); border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-
-        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+        /* เนื้อหาหน้าหลัก (ย่อจากเดิม) */
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; padding: 10px; }
+        .news-card { background: var(--panel); border: 1px solid #333; padding: 10px; border-radius: 5px; border-left: 3px solid var(--neon); font-size: 0.8rem; }
+        .chat-area { margin: 10px; background: var(--panel); border: 1px solid var(--neon); border-radius: 10px; height: 250px; display: flex; flex-direction: column; }
+        #chat-logs { flex: 1; overflow-y: auto; padding: 10px; font-size: 0.8rem; }
+        .input-group { display: flex; padding: 10px; background: #000; gap: 5px; }
+        input#user-input { flex: 1; background: #111; border: 1px solid #444; color: #fff; padding: 8px; border-radius: 5px; }
     </style>
 </head>
 <body>
     <div class="grid-bg"></div>
-    <header>
-        <div class="logo">JARVIS MK-V20</div>
-        <div style="font-size: 0.7rem; text-align: right;">REGION: <span style="color:var(--neon)">THAILAND SECTOR</span><br>PILOT: SOMDET</div>
-    </header>
 
-    <!-- News Categories -->
-    <div class="news-grid">
-        <div class="news-card" onclick="askAI('ข่าวการเมือง')"><h3>POLITICS</h3><div>ข่าวการเมือง</div></div>
-        <div class="news-card" onclick="askAI('ข่าวเศรษฐกิจ')"><h3>ECONOMY</h3><div>ข่าวเศรษฐกิจ</div></div>
-        <div class="news-card" onclick="askAI('ข่าวกีฬา')"><h3>SPORTS</h3><div>ข่าวกีฬา</div></div>
-        <div class="news-card" onclick="askAI('ข่าวตลาดหุ้น')"><h3>STOCKS</h3><div>ข่าวตลาดหุ้น</div></div>
-        <div class="news-card" onclick="askAI('ข่าวด่วน')" style="border-left-color: var(--red);"><h3>BREAKING</h3><div class="alert">ข่าวด่วน</div></div>
-        <div class="news-card" onclick="askAI('ข่าวเสริม')"><h3>EXTRA</h3><div>ข่าวเสริม</div></div>
+    <!-- 1. LOADING SCREEN -->
+    <div id="loading-screen">
+        <div class="loader-ring"></div>
+        <h2 style="font-family:'Orbitron'; color:var(--neon); margin-top:20px; letter-spacing:5px;">INITIALIZING...</h2>
+        <p id="load-text" style="font-size:0.8rem; color:#555;">SECURITY PROTOCOL ACTIVE</p>
     </div>
 
-    <!-- Satellite & Disaster Systems -->
-    <div class="system-status">
-        <div class="status-box">
-            <span style="color:var(--neon)">🛰️ SATELLITE SYSTEM:</span><br>
-            <span id="sat-info">SCANNING THAILAND...</span>
-        </div>
-        <div class="status-box">
-            <span style="color:var(--red)">⚠️ DISASTER WATCH:</span><br>
-            <span id="disaster-info">NORMAL STATUS</span>
+    <!-- 2. LOGIN SCREEN -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h2 style="font-family:'Orbitron'; color:var(--neon);">AUTHENTICATION</h2>
+            <p style="font-size:0.7rem; color:#888;">ID: PILOT-SOMDET-MKV20</p>
+            <input type="password" id="passkey" placeholder="PASSKEY" onkeypress="if(event.key==='Enter') verify()">
+            <button class="login-btn" onclick="verify()">ACCESS SYSTEM</button>
+            <p id="login-err" style="color:var(--red); font-size:0.7rem; margin-top:10px; display:none;">ACCESS DENIED: INVALID KEY</p>
         </div>
     </div>
 
-    <!-- Chat Interface -->
-    <div class="chat-area">
-        <div id="chat-logs">
-            <div style="color:var(--neon)">[JARVIS]: ระบบ Global Scan ประจำการแล้วครับท่านสมเดช ระบุหมวดหมู่ที่ต้องการตรวจสอบได้เลยครับ</div>
+    <!-- 3. MAIN INTERFACE -->
+    <div id="main-interface">
+        <header>
+            <div class="logo">JARVIS MK-V20</div>
+            <div class="user-id">
+                <span style="color:#888;">ID:</span> <span id="display-id" style="color:var(--neon);">SIR SOMDET</span><br>
+                <span style="color:#888;">LVL:</span> <span style="color:#0f0;">ADMINSTRATOR</span>
+            </div>
+        </header>
+
+        <div class="news-grid">
+            <div class="news-card"><h3>POLITICS</h3>ข่าวการเมือง</div>
+            <div class="news-card"><h3>ECONOMY</h3>ข่าวเศรษฐกิจ</div>
+            <div class="news-card"><h3>STOCKS</h3>ข่าวตลาดหุ้น</div>
+            <div class="news-card"><h3>BREAKING</h3><span style="color:var(--red)">ข่าวด่วน</span></div>
         </div>
-        <div class="input-group">
-            <input type="text" id="user-input" placeholder="พิมพ์คำสั่งสั่งการ..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button onclick="sendMessage()">SEND</button>
+
+        <div style="display:flex; gap:10px; padding:0 10px;">
+            <div style="flex:1; background:rgba(0,0,0,0.5); padding:10px; border:1px solid #333; font-size:0.7rem;">
+                <span style="color:var(--neon)">🛰️ SAT:</span> ONLINE
+            </div>
+            <div style="flex:1; background:rgba(0,0,0,0.5); padding:10px; border:1px solid #333; font-size:0.7rem;">
+                <span style="color:var(--red)">⚠️ DISASTER:</span> NORMAL
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <div id="chat-logs">
+                <div style="color:var(--neon)">[JARVIS]: ยินดีต้อนรับกลับครับท่านสมเดช ระบบพร้อมทำงานแล้วครับ</div>
+            </div>
+            <div class="input-group">
+                <input type="text" id="user-input" placeholder="พิมพ์คำสั่งสั่งการ..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" style="background:var(--neon); border:none; border-radius:5px; padding:0 15px;">SEND</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const logs = document.getElementById('chat-logs');
-        const input = document.getElementById('user-input');
+        // ระบบลำดับการแสดงผล (Loading -> Login -> Main)
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('login-screen').style.display = 'flex';
+            }, 3000); // โหลด 3 วินาที
+        };
 
-        // ระบบจำลองข้อมูลดาวเทียมและภัยพิบัติ
-        setInterval(() => {
-            const loc = ["กรุงเทพฯ", "เชียงใหม่", "ภูเก็ต", "ชลบุรี"];
-            const r = Math.floor(Math.random() * loc.length);
-            document.getElementById('sat-info').innerText = "LIVE: " + loc[r] + " SECTOR CLEAR";
-        }, 5000);
-
-        function askAI(topic) {
-            input.value = "รายงาน " + topic;
-            sendMessage();
+        function verify() {
+            const key = document.getElementById('passkey').value;
+            // รหัสผ่านคือ "1234" (ท่านสามารถเปลี่ยนเองได้ตรงนี้ครับ)
+            if(key === "1234") {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-interface').style.display = 'block';
+                speak("ยินดีต้อนรับกลับครับท่านสมเดช ระบบพร้อมทำงานแล้วครับ");
+            } else {
+                document.getElementById('login-err').style.display = 'block';
+                document.getElementById('passkey').value = '';
+            }
         }
 
         function sendMessage() {
-            const val = input.value.trim();
-            if(!val) return;
-
-            logs.innerHTML += `<div style="text-align:right; margin:10px 0;">[YOU]: ${val}</div>`;
-            const q = val.toLowerCase();
+            const input = document.getElementById('user-input');
+            const logs = document.getElementById('chat-logs');
+            if(!input.value) return;
+            logs.innerHTML += `<div style="text-align:right; margin:10px 0;">[YOU]: ${input.value}</div>`;
+            const q = input.value.toLowerCase();
             input.value = '';
-
             setTimeout(() => {
-                let reply = "";
-                if(q.includes('การเมือง')) reply = "🚨 [การเมืองไทย] สถานการณ์ในสภาเป็นปกติ มีการหารือเรื่องงบประมาณประจำปีครับ";
-                else if(q.includes('เศรษฐกิจ')) reply = "💰 [เศรษฐกิจ] ค่าเงินบาททรงตัวที่ 36.50 บาท/ดอลลาร์ การท่องเที่ยวฟื้นตัวต่อเนื่องครับ";
-                else if(q.includes('กีฬา')) reply = "⚽ [กีฬา] ทีมชาติไทยเตรียมลงสนามนัดถัดไป ผลการแข่งขันลีกยุโรปเมื่อคืนนี้ดุเดือดมากครับ";
-                else if(q.includes('ตลาดหุ้น')) reply = "📈 [ตลาดหุ้น] SET Index ปิดบวกเล็กน้อย กลุ่มพลังงานและธนาคารยังคงนำตลาดครับ";
-                else if(q.includes('ด่วน')) reply = "🔥 [ข่าวด่วน] ตรวจพบการเปลี่ยนแปลงของกระแสลมในอันดามัน เฝ้าระวังกลุ่มฝนหนาแน่นใน 2 ชั่วโมงนี้!";
-                else if(q.includes('เสริม')) reply = "➕ [ข่าวเสริม] นวัตกรรม AI ใหม่ช่วยลดการใช้พลังงานในโรงงาน กำลังเป็นที่นิยมในเขตระเบียงเศรษฐกิจครับ";
-                else if(q.includes('ภัยพิบัติ')) reply = "⚠️ [Disaster Alert] ระบบเฝ้าระวังรอยเลื่อนและระดับน้ำในเขตประเทศไทยปกติ ไม่พบสัญญาณสึนามิครับ";
-                else reply = "รับทราบครับท่านสมเดช ข้าน้อยกำลังเชื่อมต่อฐานข้อมูลในเขตประเทศไทยเพื่อสรุป '" + val + "' ให้ท่านครับ";
-
-                logs.innerHTML += `<div style="color:var(--neon); margin-bottom:15px;">[JARVIS]: ${reply}</div>`;
+                let r = "ข้าน้อยกำลังประมวลผลคำสั่งของท่านสมเดชครับ";
+                if(q.includes('ข่าว')) r = "กำลังดึงข้อมูลข่าวสารล่าสุดในเขต Thailand Sector ครับ";
+                logs.innerHTML += `<div style="color:var(--neon); margin-bottom:10px;">[JARVIS]: ${r}</div>`;
                 logs.scrollTop = logs.scrollHeight;
-                speak(reply);
+                speak(r);
             }, 800);
         }
 
